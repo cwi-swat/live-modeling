@@ -1,0 +1,78 @@
+// Program changed while being executed (its new version): p
+// The execution state of the program (before it was changed): s
+// The new execution state of the program (computed on-the-fly): x
+// The set of constraints that ensure that the execution state is valid for the program: R(p, x)
+// The distance between the previous and new execution states: d(s, x)
+// The difference between the previous program and the new program: c  
+// (if an element of c appears in p then this element was added, otherwise deleted)
+
+// ------ classes (objects) -----------------------------------------------------------
+p_Subsystem (sId: id) = {<s1> .. <s4>}
+p_Action (aId: id) = {<a1> .. <a6>}
+p_SSA (sId: id, aId: id) = {<s1, a1>, <s1, a2>, <s2, a3>, <s2, a5>, <s3, a4>, <s3, a6>}
+
+// ------ model instance (program), its delta and the old execution state --------------
+p_task (aId: id) = {<a1> .. <a4>}
+p_order (aId: id, succeeds: id) = {<a3, a1>, <a2, a4>, <a2, a1>}
+
+c_task (aId: id) = {<a4>}
+c_order (aId: id, succeeds: id) = {<a2, a4>}
+
+s_request (aId: id) = {<a3>}
+s_queues (sId: id, aId: id, index: int) = {<s1, a1, 2>, <s1, a2, 1>}
+
+// ------ new execution state and its distance (these we are searching for) -------------
+x_request (aId: id) <= {<a1> .. <a6>}
+x_queues (sId: id, aId: id, index: int) <= {<s1, a1, ?> .. <s4, a6, ?>}
+
+d_request (aId: id) <= {<a1> .. <a6>}
+d_queues (sId: id, aId: id, index: int) <= {<s1, a1, ?> .. <s4, a6, ?>}
+
+// ------ types of associations --------------------------------------------------------
+x_request ⊆ p_Action
+x_queues[sId, aId] ⊆ p_SSA  
+
+d_request ⊆ p_task
+d_queues[sId, aId] ⊆ p_SSA  
+
+// ===== Semantic constraints for an(any) execution state of a program: R(p, x) ===================================
+// Current request is a subset of the current task
+x_request ⊆ p_task
+
+// Each queued action of the task is removed from the request
+no x_queues[aId] ∩ x_request
+//∀ a ∈ x_queues[aId] | ¬(a ⊆ x_request) 
+
+// Each queue corresponds to a subsystem (and contains actions only of this subsystem)
+x_queues[sId, aId] ⊆ p_SSA
+
+// An action cannot be queued if it succeeds an action that hasn't been queued yet (= that is still in the request)
+∀ a ∈ p_order | (a[succeeds][succeeds as aId] ⊆ x_request) ⇒ (a[aId] ⊆ x_request)
+
+// An action cannot be queued if it succeeds an action that hasn't been executed yet (= that is still in a queue)
+// unless these actions belong to one subsystem
+∀ a ∈ p_order | (a[succeeds][succeeds as aId] ⊆ x_queues[aId]) 
+	 ∧ ((a[succeeds][succeeds as aId] ⨝ p_SSA)[sId] ≠ (a[aId] ⨝ p_SSA)[sId])
+		⇒ (a[aId] ⊆ x_request)
+
+// If actions from one subsystem are ordered, then they should be queued in the corresponding order
+∀ a ∈ p_order, s ∈ p_Subsystem | 
+	a[aId] ⨯ s ⊆ x_queues[sId, aId] ∧ a[succeeds][succeeds as aId] ⨯ s ⊆ x_queues[sId, aId] ⇒ 
+	some ( ((a[aId] ⨝ x_queues)[index][index as i1] ⨯ 
+			(a[succeeds][succeeds as aId] ⨝ x_queues)[index][index as i2])
+		where i1 > i2 )	
+
+// ===== Migration instructions: M(p, s, x) ======================================================================
+// If we add new actions to the task, put them into request
+c_task ∩ p_task ⊆ x_request
+
+// ===== Distance between execution states d(s, x) ===============================================================
+// Set-based difference for the current state and the trace
+d_request = (s_request ∖ x_request) ∪ (x_request ∖ s_request)
+//d_queues = (s_queues ∖ x_queues) ∪ (x_queues ∖ s_queues)
+d_queues = (s_queues ∪ x_queues) ∖ (s_queues ∩ x_queues)
+	
+// The goal is to minimize this distance
+objectives: minimize d_request[count()], minimize d_queues[count()]
+
+

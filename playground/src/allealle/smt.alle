@@ -1,0 +1,40 @@
+// ------ classes (instantiated) ----------------------------------
+Machine (mId: id) = {<m1> .. <m2>}
+State (sId: id) = {<s1> .. <s6>}
+Trans (tId: id)	= {<t1> .. <t7>}
+
+// ------ associations (instantiated) -----------------------------
+states (mId: id, sId: id) = {<m1, s1> .. <m1, s3>, <m2, s4> .. <m2, s6>} //<= {<m1, s1> .. <m2, s6>}
+transitions (sId: id, tId: id) = {<s1, t1>, <s2, t2>, <s3, t3>, <s4, t4>, <s5, t5>, <s6, t6>, <s6, t7>} //<= {<s1, t1> .. <s6, t10>}
+target (tId: id, sId: id) >= {<t1, s2>, <t2, s3>, <t3, s1>, <t4, s5>, <t5, s6>, <t6, s4>, <t7, s6>} <= {<t1, s1> .. <t7, s6>}
+
+// ------ types of associations ----------------------------------
+states ⊆ Machine ⨯ State
+transitions ⊆ State ⨯ Trans
+target ⊆ Trans ⨯ State
+
+// ------ multiplicity constraints -------------------------------
+// [1..*] for states
+∀ m ∈ Machine | some states ⨝ m
+// [1..1] for target
+∀ t ∈ Trans | one target ⨝ t
+
+// ------ containment constraints --------------------------------
+
+// All existing states are contained in a machine (via states)
+State ⊆ states[sId]
+// All existing transitions are contained in a state (via transitions)
+Trans ⊆ transitions[tId]
+
+// Each state belongs to only one machine
+∀ s ∈ State | one states ⨝ s
+// Each transition belongs to only one state
+∀ t ∈ Trans | one transitions ⨝ t
+
+// ------ logical constraints for the state machine ---------------
+
+// Transitions can target only states within their (owning) state machine
+∀ m ∈ Machine | let image = (states ⨝ m)[sId] | 
+	( (image ⨝ transitions ⨝ target)[sId] ⊆ image)
+
+

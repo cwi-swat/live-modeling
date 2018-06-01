@@ -1,0 +1,69 @@
+// static metamodel
+static {
+	root class Task {
+	     task: Action*
+	     order: OrderedPair*
+	}
+
+	class Subsystem (s1.. s10) {
+	      ssa: Action*
+	}
+
+	class Action (a1.. a20);
+
+	class OrderedPair (p1..p10) {
+	      action: Action
+	      succeeds: Action
+	}
+
+}
+
+//dynamic metamodel
+runtime {
+	extend Task {
+	       request: Action*
+
+	       invariants {
+			// Current request is a subset of the current task
+			request in task
+
+			
+			
+		}
+	}
+
+	extend Subsystem {
+		queue: QueuedAction*
+
+		invariants {
+			// Each queue corresponds to a subsystem (and contains actions only of this subsystem)
+			forall qa in queue | qa.item in ssa
+
+			// Each queued action of the task is removed from the request
+			forall qa in queue | not (qa.item in Task.request)
+
+			// An action cannot be queued if it succeeds an action that hasn't been queued yet (= that is still in the request)
+			
+
+			// An action cannot be queued if it succeeds an action that hasn't been executed yet (= that is still in a queue)
+			// unless these actions belong to one subsystem
+			
+
+			// If actions from one subsystem are ordered, then they should be queued in the corresponding order
+			
+		}
+
+	}
+
+	class QueuedAction (qa1..qa30) {
+		item: Action
+		index: int
+	}
+
+}
+
+
+migration {
+	// If we add new actions to the task, put them into request
+	(new.Task.task \ old.Task.task) in new.Task.request
+}
