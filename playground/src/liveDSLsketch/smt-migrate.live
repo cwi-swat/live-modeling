@@ -1,73 +1,60 @@
 // static meta Model
-static {
-	class Machine (1) {      
+static class Machine (1) {      
     states: State*          //* means 'set'
     initial: State
-  }
-  
-  class State (10) {
-    transitions: Trans*
-  }
-
-  class Trans (20) {
-    target: State
-  }
-
 }
+  
+static class State (10) {
+    transitions: Trans*
+}
+
+static class Trans (20) {
+    target: State
+}
+
 
 // Dynamic meta model
 // rule: Runtime things can refer to static things but not vice versa
-runtime {
-	class CurrentState {
-		machine: Machine 
-		current: State
+runtime class Runtime {
 		
-		invariant: current in machine.states
-	}     
+	machine: Machine 
+	current: State
+	visited: VisitedState*
+	trace: Step* 
+		
+	invariants {		
+		current in machine.states
+		
+		forall s in trace | s.from in machine.states && s.to in machinestates
+
+   		forall s in trace | s.to in ^machine.initial.transitions.target
+
+     	// Current state appears in the trace (as a next for some tuple), unless the trace is empty
+     	some trace => exists s in trace | s.to = current
+
+     	// Visited is equal to the number of appearences of the state in the execution trace (as a source of a transition)
+     	forall v in visited | v.visit == count(trace where trace.from = v.state)   
+    		(I have my doubts whether this can be automatically translated to the right AlleAlle expression but lets see)
+	}
+}     
     
-    class VisitedState {
-    	state: State
-    	visit: int
+runtime class VisitedState {
+    state: State
+    visit: int
 
-    	invariant: visit >= 0
-    }
-
-	class Visited {
-		states: VisitedState*
-	
-	}  
-
-	class Step (10) { 
-    	from: State
-    	to: State
-    
-    	// Every step in the trace has a corresponding transition in the machine
-    	invariant: exists t in from.transitions | t.target = to
- 	}
-    
-    
-    class Trace {
-    	steps: Step* 
-    }
-
-    invariants {
-
-      forall s in trace | s.from in states && s.to in states
-
-      forall s in trace | s.to in ^machine.initial.transitions.target
-
-      // Current state appears in the trace (as a next for some tuple), unless the trace is empty
-      some trace => exists s in trace | s.to = current
-
-      // Visited is equal to the number of appearences of the state in the execution trace (as a source of a transition)
-      forall s in states | s.visit = count(trace where trace.from = s)   (I have my doubts whether this can be automatically translated to the right AlleAlle expression but lets see)
-    }
-  }
-  
- 
+    invariant: visit >= 0
 }
+
+runtime class Step (10) { 
+    from: State
+    to: State
+    
+    // Every step in the trace has a corresponding transition in the machine
+    invariant: exists t in from.transitions | t.target = to
+ }
+    
 
 migration {
   // migration is always in the scope of the current and next runtime (old,new)
-  !(old.Machine.current in new.Machine.states) => new.Machine.current = new.Machine.initial
+  !(old.Runtime.current in new.Machine.states) => new.Runtime.current = new.Machine.initial
 }
