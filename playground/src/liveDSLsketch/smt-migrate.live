@@ -1,15 +1,15 @@
 // static meta Model
 static {
-  root class Machine {      // root class: singleton, to define the scope of the (runtime) model
+	class Machine (1) {      
     states: State*          //* means 'set'
     initial: State
   }
   
-  class State (s1..s10) {
+  class State (10) {
     transitions: Trans*
   }
 
-  class Trans (t1..t20) {
+  class Trans (20) {
     target: State
   }
 
@@ -18,13 +18,39 @@ static {
 // Dynamic meta model
 // rule: Runtime things can refer to static things but not vice versa
 runtime {
+	class CurrentState {
+		machine: Machine 
+		current: State
+		
+		invariant: current in machine.states
+	}     
+    
+    class VisitedState {
+    	state: State
+    	visit: int
 
-  extend Machine {         // (1) runtime model can extend classes from the static model
-    current: State         // current state of the _root_ machine
-    trace: Step* 
+    	invariant: visit >= 0
+    }
+
+	class Visited {
+		states: VisitedState*
+	
+	}  
+
+	class Step (10) { 
+    	from: State
+    	to: State
+    
+    	// Every step in the trace has a corresponding transition in the machine
+    	invariant: exists t in from.transitions | t.target = to
+ 	}
+    
+    
+    class Trace {
+    	steps: Step* 
+    }
 
     invariants {
-      current in states    // current state if the _root_ machine is in states of the root machine
 
       forall s in trace | s.from in states && s.to in states
 
@@ -38,21 +64,7 @@ runtime {
     }
   }
   
-  extend State {
-    visit: int
-
-    invariant {
-      visit >= 0
-    }
-  }  
-
-  class Step (step1,...,step10) {    // (2) runtime model can introduce new classes too
-    from: State
-    to: State
-    
-    // Every event in the trace has a corresponding transition in the machine
-    invariant: exists t in from.transitions | t.target = to
-  }
+ 
 }
 
 migration {

@@ -1,17 +1,17 @@
 // static metamodel
 static {
-	root class Task {
-	     task: Action*
+	root class Task (1) {
+	     actions: Action*
 	     order: OrderedPair*
 	}
 
-	class Subsystem (s1.. s10) {
+	class Subsystem (10) {
 	      ssa: Action*
 	}
 
-	class Action (a1.. a20);
+	class Action (20);
 
-	class OrderedPair (p1..p10) {
+	class OrderedPair {
 	      action: Action
 	      succeeds: Action
 	}
@@ -20,50 +20,50 @@ static {
 
 //dynamic metamodel
 runtime {
-	extend Task {
-	       request: Action*
+	class Request (1) {
+		actions: Action*
+		task: Task
 
-	       invariants {
+	      invariants {
 			// Current request is a subset of the current task
-			request in task
-
-			
+			actions in task.actions	
 			
 		}
 	}
 
-	extend Subsystem {
-		queue: QueuedAction*
+	class Queue {
+		subsystem: Subsystem
+		actions: QueuedAction*
 
 		invariants {
 			// Each queue corresponds to a subsystem (and contains actions only of this subsystem)
-			forall qa in queue | qa.item in ssa
-
-			// Each queued action of the task is removed from the request
-			forall qa in queue | not (qa.item in Task.request)
-
-			// An action cannot be queued if it succeeds an action that hasn't been queued yet (= that is still in the request)
-			
-
-			// An action cannot be queued if it succeeds an action that hasn't been executed yet (= that is still in a queue)
-			// unless these actions belong to one subsystem
-			
-
-			// If actions from one subsystem are ordered, then they should be queued in the corresponding order
-			
+			forall qa in actions | qa.item in subsystem.ssa	
 		}
 
 	}
 
-	class QueuedAction (qa1..qa30) {
+	class QueuedAction {
 		item: Action
 		index: int
 	}
 
+	invariants {
+		// Each queued action of the task is removed from the request
+		forall qa in Queue.actions | not (qa.item in Request.actions)
+
+		// An action cannot be queued if it succeeds an action that hasn't been queued yet (= that is still in the request)
+			
+
+		// An action cannot be queued if it succeeds an action that hasn't been executed yet (= that is still in a queue)
+		// unless these actions belong to one subsystem
+			
+
+		// If actions from one subsystem are ordered, then they should be queued in the corresponding order
+	}	
 }
 
 
 migration {
 	// If we add new actions to the task, put them into request
-	(new.Task.task \ old.Task.task) in new.Task.request
+	(new.Task.actions \ old.Task.actions) in new.Request.actions
 }
