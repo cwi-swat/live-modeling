@@ -63,5 +63,5 @@ runtime {
 
 migration {
   // if the old current state does not exist anymore in the new machine states then the new current state is the machine's initial state
-  !(old Runtime.current in new Runtime.machine.states) => new Runtime.current = new Machine.initial
+  not (old Runtime.current in new Runtime.machine.states) => new Runtime.current = new Machine.initial
 }
