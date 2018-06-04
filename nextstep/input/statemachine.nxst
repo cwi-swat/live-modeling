@@ -1,0 +1,67 @@
+static {
+  class Machine (1..1) {      
+    states: State* //* means 'set'
+    initial: State
+    
+    invariants {
+      // initial must be a known state
+      initial in states
+      // all states that are targeted in the transitions must be part of the machine
+      states.transitions.target in states
+    }
+  }
+  
+  class State (5) {
+    transitions: Trans*
+  }
+
+  class Trans (5) {
+    target: State
+  }
+}
+
+runtime {
+  class Runtime (1..1) {
+    machine: Machine
+    current: State
+    visited: Visit*
+    trace: Step*
+    
+    invariants {
+      // the current state must be part of the states connected to the machine
+      current in machine.states
+
+      // both the trace from and to targets must be part of the states of the machine
+      trace.from ++ trace.to in machine.states
+      
+      // all to targets in the trace must be reachable from the initial state of the machine
+      trace.to in ^machine.initial.transitions.target
+      
+      // if there is a trace, the current state must be part of it
+      some trace => exists s: trace | s.to = current
+      
+      // the nr of times that a state was visited depends of the nr of occurences in the trace
+      forall v: visisted | v.nr = count(trace where (trace.from = v.state))
+    }
+  } 
+  
+  class Visit {
+    state: State
+    nr: int
+    
+    invariant: nr >= 0
+  }
+  
+  class Step {
+    from: State
+    to: State
+    
+    // it must be possible to transition to the given 'to' state from the given 'from' state
+    invariant: exists t: from.transitions | t.target = to
+  }
+}
+
+migration {
+  // if the old current state does not exist anymore in the new machine states then the new current state is the machine's initial state
+  !(old Runtime.current in new Runtime.machine.states) => new Runtime.current = new Machine.initial
+}
