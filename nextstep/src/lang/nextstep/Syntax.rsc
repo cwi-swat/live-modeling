@@ -37,7 +37,7 @@ syntax Type
 
 syntax Formula 
   = bracket "(" Formula ")"
-  > neg:        "!" Formula
+  > neg:        "not" Formula
   > some:       "some" Expr
   | no:         "no" Expr
   > subset:     Expr "in" Expr
@@ -46,8 +46,8 @@ syntax Formula
   | iff:        Formula "\<=\>" Formula
   > conj:       Formula "&&" Formula
   | disj:       Formula "||" Formula
-  > forall:     "forall" QuantDecl decl "|" Formula form
-  | exists:     "exists" QuantDecl decl "|" Formula form
+  > forall:     "forall" {QuantDecl ","}+ decls "|" Formula form
+  | exists:     "exists" {QuantDecl ","}+ decls "|" Formula form
   ;
   
 syntax QuantDecl = VarName ":" Expr;  
@@ -112,4 +112,4 @@ lexical VarName = ([a-zA-Z] !<< [a-zA-Z][a-zA-Z0-9_\']* !>> [a-zA-Z0-9_]) \ Keyw
 
 lexical Int = [0-9]+;
 
-keyword Keywords = "static" | "runtime" | "migration" | "class" | "invariant" | "invariants" | "some" | "forall" | "exists" | "int" | "old" | "new";
+keyword Keywords = "static" | "runtime" | "migration" | "class" | "invariant" | "invariants" | "not" | "some" | "forall" | "exists" | "int" | "old" | "new";
