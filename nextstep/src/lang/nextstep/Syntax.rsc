@@ -3,7 +3,7 @@ module lang::nextstep::Syntax
 extend lang::std::Layout;
 extend lang::std::Id;
 
-start syntax Spec = StaticDef? static DynamicDef? dynamic MigrationDef? migration;
+start syntax Spec = StaticDef static DynamicDef dynamic MigrationDef migration;
 
 syntax StaticDef = "static" "{" Class* classes "}";
 
@@ -16,7 +16,7 @@ syntax Class = "class" ClassName name Super? Bounds? bounds "{" ClassBody body "
 syntax Super = "extends" ClassName parent;
 
 syntax Bounds
-  = upperOnly:      "(" Int ")"
+  = upperOnly:      "(" Int upper ")"
   | upperAndLower:  "(" Int from ".." Int to ")"
   ;
 
