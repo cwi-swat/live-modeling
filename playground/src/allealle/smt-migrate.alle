@@ -11,94 +11,94 @@ p_State (sId: id) = {<s1> .. <s4>}
 p_Trans (tId: id) = {<t1> .. <t5>}
 
 // (I)
-p_states (mId: id, sId: id) = {<m1, s1> .. <m1, s2>}
-p_transitions (sId: id, tId: id) = {<s1, t1>}
-p_target (tId: id, sId: id) = {<t1, s2>}
-p_initial (mId: id, sId: id) = {<m1, s1>}
+p'_states (mId: id, sId: id) = {<m1, s1> .. <m1, s2>}
+p'_transitions (sId: id, tId: id) = {<s1, t1>}
+p'_target (tId: id, sId: id) = {<t1, s2>}
+p'_initial (mId: id, sId: id) = {<m1, s1>}
 
-s_current (mId: id, sId: id) = {<m1, s3>}
-s_visited (sId: id, val: int) = {<s1, 1>, <s2, 1>, <s3, 0>}
-s_Trace (sId: id, next: id, stepId: id) = {<s1, s2, step0>, <s2, s3, step1>}
+x_current (mId: id, sId: id) = {<m1, s3>}
+x_visited (sId: id, val: int) = {<s1, 1>, <s2, 1>, <s3, 0>}
+x_Trace (sId: id, next: id, stepId: id) = {<s1, s2, step0>, <s2, s3, step1>}
 
 // (II)
-//p_states (mId: id, sId: id) = {<m1, s1> .. <m1, s4>}
-//p_transitions (sId: id, tId: id) = {<s1, t1>, <s2, t2>, <s3, t3>, <s4, t4>, <s3, t5>}
-//p_target (tId: id, sId: id) = {<t1, s2>, <t2, s3>, <t3, s1>, <t4, s2>, <t5, s4>}
-//p_initial (mId: id, sId: id) = {<m1, s1>}
+//p'_states (mId: id, sId: id) = {<m1, s1> .. <m1, s4>}
+//p'_transitions (sId: id, tId: id) = {<s1, t1>, <s2, t2>, <s3, t3>, <s4, t4>, <s3, t5>}
+//p'_target (tId: id, sId: id) = {<t1, s2>, <t2, s3>, <t3, s1>, <t4, s2>, <t5, s4>}
+//p'_initial (mId: id, sId: id) = {<m1, s1>}
 //
-//s_current (mId: id, sId: id) = {<m1, s3>}
-//s_visited (sId: id, val: int) = {<s1, 1>, <s2, 1>, <s3, 0>}
-//s_Trace (sId: id, next: id, stepId: id) = {<s1, s2, step0>, <s2, s3, step1>}
+//x_current (mId: id, sId: id) = {<m1, s3>}
+//x_visited (sId: id, val: int) = {<s1, 1>, <s2, 1>, <s3, 0>}
+//x_Trace (sId: id, next: id, stepId: id) = {<s1, s2, step0>, <s2, s3, step1>}
 
 // (III)
-//p_states (mId: id, sId: id) = {<m1, s1>, <m1, s2>, <m1, s4>}
-//p_transitions (sId: id, tId: id) = {<s1, t1>, <s2, t2>, <s4, t4>}
-//p_target (tId: id, sId: id) = {<t1, s2>, <t4, s2>}
-//p_initial (mId: id, sId: id) = {<m1, s1>}
+//p'_states (mId: id, sId: id) = {<m1, s1>, <m1, s2>, <m1, s4>}
+//p'_transitions (sId: id, tId: id) = {<s1, t1>, <s2, t2>, <s4, t4>}
+//p'_target (tId: id, sId: id) = {<t1, s2>, <t4, s2>}
+//p'_initial (mId: id, sId: id) = {<m1, s1>}
 //
-//s_current (mId: id, sId: id) = {<m1, s4>}
-//s_visited (sId: id, val: int) = {<s1, 1>, <s2, 1>, <s3, 1>, <s4, 0>}
-//s_Trace (sId: id, next: id, stepId: id) = {<s1, s2, step0>, <s2, s3, step1>, <s3, s4, step2>}
+//x_current (mId: id, sId: id) = {<m1, s4>}
+//x_visited (sId: id, val: int) = {<s1, 1>, <s2, 1>, <s3, 1>, <s4, 0>}
+//x_Trace (sId: id, next: id, stepId: id) = {<s1, s2, step0>, <s2, s3, step1>, <s3, s4, step2>}
 
 // Auxiliary construct for the trace
 step (stepId:id) <= {<step0>..<step5>}
   
 // ------ classes and associations (that we are searching for) -------------
-x_current (mId: id, sId: id) <= {<m1, s1> .. <m1, s4>}
-x_visited (sId: id, val: int) <= {<s1, ?> .. <s4, ?>}
-x_Trace (sId: id, next: id, stepId: id) <= {<s1,s1,step0>..<s4,s4,step5>}
+x'_current (mId: id, sId: id) <= {<m1, s1> .. <m1, s4>}
+x'_visited (sId: id, val: int) <= {<s1, ?> .. <s4, ?>}
+x'_Trace (sId: id, next: id, stepId: id) <= {<s1,s1,step0>..<s4,s4,step5>}
 
 d_current (mId: id, sId: id) <= {<m1, s1> .. <m1, s4>}
 d_visited (sId: id, delta: int) <= {<s1, ?> .. <s4, ?>}
 d_Trace (sId: id, next: id, stepId: id) <= {<s1,s1,step0>..<s4,s4,step5>} 
 
 // ------ types of associations --------------------------------------------
-x_current ⊆ p_Machine ⨯ p_State
-x_visited[sId] = p_states[sId]
-x_Trace[sId] ⊆ p_State ∧ x_Trace[next][next as sId] ⊆ p_State
+x'_current ⊆ p_Machine ⨯ p_State
+x'_visited[sId] = p'_states[sId]
+x'_Trace[sId] ⊆ p_State ∧ x'_Trace[next][next as sId] ⊆ p_State
 
 d_current ⊆ p_Machine ⨯ p_State
-d_visited[sId] = x_visited[sId]
-//d_Trace[sId] ⊆ p_State ∧ x_Trace[next][sId/next] ⊆ p_State
+d_visited[sId] = x'_visited[sId]
+//d_Trace[sId] ⊆ p_State ∧ x'_Trace[next][sId/next] ⊆ p_State
 
 // ===== Semantic constraints for an(any) execution state of a program: R(p, x) ===================================
 // [1..1] for current state
-∀ m ∈ p_Machine | one x_current ⨝ m
+∀ m ∈ p_Machine | one x'_current ⨝ m
 
 // Current state of a machine is one of its states
-∀ c ∈ x_current | one p_states ⨝ c[mId] ⨝ c[sId]
+∀ c ∈ x'_current | one p'_states ⨝ c[mId] ⨝ c[sId]
 
 // Visited is bigger than zero 
-∀ v ∈ x_visited | some (v where val >= 0)
+∀ v ∈ x'_visited | some (v where val >= 0)
 
 // Every tuple in the trace has a corresponding transition in the machine
-∀ t ∈ x_Trace[sId,next] | t ⊆ (p_transitions ⨝ p_target[sId as next])[sId,next]
+∀ t ∈ x'_Trace[sId,next] | t ⊆ (p'_transitions ⨝ p'_target[sId as next])[sId,next]
 
 // Every (next) state in the trace is reachable from the initial state (via the transitive closure of the trace)
-∀ t ∈ x_Trace[next] | t ⊆ (p_initial[sId] ⨝ ^<sId,next>x_Trace[sId,next])[next]
+∀ t ∈ x'_Trace[next] | t ⊆ (p'_initial[sId] ⨝ ^<sId,next>x'_Trace[sId,next])[next]
  
 // Visited is equal to the number of appearences of the state in the execution trace (as a source of a transition)
-∀ s ∈ x_visited | some (((s ⨝ x_Trace)[count() as nr] ⨯ s) where nr = val)
+∀ s ∈ x'_visited | some (((s ⨝ x'_Trace)[count() as nr] ⨯ s) where nr = val)
 
 // Current state appears in the trace (as a next for some tuple), unless the trace is empty
-(some x_Trace ⇒ x_current[sId] ⊆ x_Trace[next][next as sId]) ∧ 
-	(no x_Trace ⇒ x_current[sId] = p_initial[sId])
-//(x_current[sId] ⊆ x_Trace[next][next as sId]) ∨ (x_current[sId] = p_initial[sId] ∧ no x_Trace)
+(some x'_Trace ⇒ x'_current[sId] ⊆ x'_Trace[next][next as sId]) ∧ 
+	(no x'_Trace ⇒ x'_current[sId] = p'_initial[sId])
+//(x'_current[sId] ⊆ x'_Trace[next][next as sId]) ∨ (x'_current[sId] = p'_initial[sId] ∧ no x'_Trace)
 
 // ===== Migration instructions: M(p, s, x) ======================================================================
 // Use initial state as the default current state if the current state has been removed from the program          
-¬(s_current[sId] ⊆ p_states[sId]) ⇒ x_current[sId] = p_initial[sId]
+¬(x_current[sId] ⊆ p'_states[sId]) ⇒ x'_current[sId] = p'_initial[sId]
 
 // ===== Distance between execution states d(s, x) ===============================================================
 // Set-based difference for the current state and the trace
-d_current = (s_current ∖ x_current) ∪ (x_current ∖ s_current)
-d_Trace = (s_Trace ∖ x_Trace) ∪ (x_Trace ∖ s_Trace)
+d_current = (x_current ∖ x'_current) ∪ (x'_current ∖ x_current)
+d_Trace = (x_Trace ∖ x'_Trace) ∪ (x'_Trace ∖ x_Trace)
 
 // Distance between visited is a vector of differences |s-x|, united with plain values |x| for the newly added states
-∀ s ∈ x_visited[sId] ∩ s_visited[sId] | 
-	some (s ⨝ d_visited ⨝ s_visited ⨝ x_visited[val as xVal]) where (delta = |val - xVal|)
-∀ s ∈ x_visited[sId] ∖ s_visited[sId] | 	
-	some (s ⨝ d_visited ⨝ x_visited) where (delta = val)
+∀ s ∈ x'_visited[sId] ∩ x_visited[sId] | 
+	some (s ⨝ d_visited ⨝ x_visited ⨝ x'_visited[val as xVal]) where (delta = |val - xVal|)
+∀ s ∈ x'_visited[sId] ∖ x_visited[sId] | 	
+	some (s ⨝ d_visited ⨝ x'_visited) where (delta = val)
 	
 // The goal is to minimize this distance
 objectives: minimize d_current[count() as nr], minimize d_Trace[count() as nr], minimize d_visited[sum(delta) as distance]
