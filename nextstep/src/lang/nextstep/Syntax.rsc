@@ -1,7 +1,6 @@
 module lang::nextstep::Syntax
 
 extend lang::std::Layout;
-extend lang::std::Id;
 
 start syntax Spec = StaticDef static DynamicDef dynamic MigrationDef migration;
 
@@ -23,7 +22,7 @@ syntax Bounds
 syntax ClassBody = FieldDecl* fields Invariant* inv;
 
 syntax FieldDecl 
-  = Id fieldName ":" Type type "*"? ;
+  = VarName fieldName ":" Type type "*"? ;
 
 syntax Invariant
   = "invariant" ":" Formula form

@@ -48,14 +48,15 @@ runtime {
     }
   } 
   
-  class Visit {
+  class Visit (5) {
     state: State
     nr: int
     
+    // Nr must be positive
     invariant: nr >= 0
   }
   
-  class Step (20) {
+  class Step (10) {
     from: State
     to: State
     

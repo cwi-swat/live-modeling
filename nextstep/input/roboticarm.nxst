@@ -42,7 +42,6 @@ runtime {
     index: int
   }
 
-
   class Runtime {
     request: Request
     queues: Queue*
