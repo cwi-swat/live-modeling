@@ -52,7 +52,7 @@ runtime {
     invariant: nr >= 0
   }
   
-  class Step {
+  class Step (20) {
     from: State
     to: State
     
