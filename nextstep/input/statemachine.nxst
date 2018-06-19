@@ -31,6 +31,9 @@ runtime {
       // the current state must be part of the states connected to the machine
       current in machine.states
 
+      // visited is defined for all states of the machine
+      forall s: machine.states | (exists v: visited | v.state = s)
+
       // both the trace from and to targets must be part of the states of the machine
       trace.from ++ trace.to in machine.states
       
