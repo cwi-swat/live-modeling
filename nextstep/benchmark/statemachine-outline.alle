@@ -1,0 +1,102 @@
+// Program changed while being executed (its new version): p
+// The execution state of the program (before it was changed): s
+// The new execution state of the program (computed on-the-fly): x
+// The set of constraints that ensure that the execution state is valid for the program: R(p, x)
+// The distance between the previous and new execution states: d(s, x)
+
+
+// ------ classes and associations (instantiated) --------------------------
+p_Machine (mId: id) = {<m1>}
+p_State (sId: id) = {<s1> .. <s4>}
+p_Trans (tId: id) = {<t1> .. <t5>}
+
+// (I)
+pp_states (mId: id, sId: id) = {<m1, s1> .. <m1, s2>}
+pp_transitions (sId: id, tId: id) = {<s1, t1>}
+pp_target (tId: id, sId: id) = {<t1, s2>}
+pp_initial (mId: id, sId: id) = {<m1, s1>}
+
+x_current (mId: id, sId: id) = {<m1, s3>}
+x_visited (sId: id, val: int) = {<s1, 1>, <s2, 1>, <s3, 0>}
+
+// (II)
+//pp_states (mId: id, sId: id) = {<m1, s1> .. <m1, s4>}
+//pp_transitions (sId: id, tId: id) = {<s1, t1>, <s2, t2>, <s3, t3>, <s4, t4>, <s3, t5>}
+//pp_target (tId: id, sId: id) = {<t1, s2>, <t2, s3>, <t3, s1>, <t4, s2>, <t5, s4>}
+//pp_initial (mId: id, sId: id) = {<m1, s1>}
+//
+//x_current (mId: id, sId: id) = {<m1, s3>}
+//x_visited (sId: id, val: int) = {<s1, 1>, <s2, 1>, <s3, 0>}
+//x_Trace (sId: id, next: id, stepId: id) = {<s1, s2, step0>, <s2, s3, step1>}
+
+// (III)
+//pp_states (mId: id, sId: id) = {<m1, s1>, <m1, s2>, <m1, s4>}
+//pp_transitions (sId: id, tId: id) = {<s1, t1>, <s2, t2>, <s4, t4>}
+//pp_target (tId: id, sId: id) = {<t1, s2>, <t4, s2>}
+//pp_initial (mId: id, sId: id) = {<m1, s1>}
+//
+//x_current (mId: id, sId: id) = {<m1, s4>}
+//x_visited (sId: id, val: int) = {<s1, 1>, <s2, 1>, <s3, 1>, <s4, 0>}
+//x_Trace (sId: id, next: id, stepId: id) = {<s1, s2, step0>, <s2, s3, step1>, <s3, s4, step2>}
+
+// Auxiliary construct for the trace
+step (stepId:id) <= {<step0>..<step5>}
+  
+// ------ classes and associations (that we are searching for) -------------
+xx_current (mId: id, sId: id) <= {<m1, s1> .. <m1, s4>}
+xx_visited (sId: id, val: int) <= {<s1, ?> .. <s4, ?>}
+//xx_Trace (sId: id, next: id, stepId: id) <= {<s1,s1,step0>..<s4,s4,step5>}
+
+d_current (mId: id, sId: id) <= {<m1, s1> .. <m1, s4>}
+d_visited (sId: id, delta: int) <= {<s1, ?> .. <s4, ?>}
+//d_Trace (sId: id, next: id, stepId: id) <= {<s1,s1,step0>..<s4,s4,step5>} 
+
+// ------ types of associations --------------------------------------------
+xx_current ⊆ p_Machine ⨯ p_State
+xx_visited[sId] = pp_states[sId]
+
+d_current ⊆ p_Machine ⨯ p_State
+d_visited[sId] = xx_visited[sId]
+
+// ===== Semantic constraints for an(any) execution state of a program: R(p, x) ===================================
+// [1..1] for current state
+∀ m ∈ p_Machine | one xx_current ⨝ m
+
+// Current state of a machine is one of its states
+∀ c ∈ xx_current | one pp_states ⨝ c[mId] ⨝ c[sId]
+
+// Visited is bigger than zero 
+∀ v ∈ xx_visited | some (v where val >= 0)
+
+// Every tuple in the trace has a corresponding transition in the machine
+//∀ t ∈ xx_Trace[sId,next] | t ⊆ (pp_transitions ⨝ pp_target[sId as next])[sId,next]
+
+// Every (next) state in the trace is reachable from the initial state (via the transitive closure of the trace)
+//∀ t ∈ xx_Trace[next] | t ⊆ (pp_initial[sId] ⨝ ^<sId,next>xx_Trace[sId,next])[next]
+ 
+// Visited is equal to the number of appearences of the state in the execution trace (as a source of a transition)
+//∀ s ∈ xx_visited | some (((s ⨝ xx_Trace)[count() as nr] ⨯ s) where nr = val)
+
+// Current state appears in the trace (as a next for some tuple), unless the trace is empty
+//(some xx_Trace ⇒ xx_current[sId] ⊆ xx_Trace[next][next as sId]) ∧ 
+//  (no xx_Trace ⇒ xx_current[sId] = pp_initial[sId])
+//(xx_current[sId] ⊆ xx_Trace[next][next as sId]) ∨ (xx_current[sId] = pp_initial[sId] ∧ no xx_Trace)
+
+// ===== Migration instructions: M(p, s, x) ======================================================================
+// Use initial state as the default current state if the current state has been removed from the program          
+¬(x_current[sId] ⊆ pp_states[sId]) ⇒ xx_current[sId] = pp_initial[sId]
+
+// ===== Distance between execution states d(s, x) ===============================================================
+// Set-based difference for the current state and the trace
+d_current = (x_current ∖ xx_current) ∪ (xx_current ∖ x_current)
+//d_Trace = (x_Trace ∖ xx_Trace) ∪ (xx_Trace ∖ x_Trace)
+
+// Distance between visited is a vector of differences |s-x|, united with plain values |x| for the newly added states
+∀ s ∈ xx_visited[sId] ∩ x_visited[sId] | 
+  some (s ⨝ d_visited ⨝ x_visited ⨝ xx_visited[val as xVal]) where (delta = |val - xVal|)
+∀ s ∈ xx_visited[sId] ∖ x_visited[sId] |  
+  some (s ⨝ d_visited ⨝ xx_visited) where (delta = val)
+  
+// The goal is to minimize this distance
+objectives: minimize d_current[count() as nr], minimize d_visited[sum(delta) as distance]
+
