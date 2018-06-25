@@ -116,7 +116,7 @@ list[RelationDef] nextep2alleRelation (NaryRelation(Class class, nextepId field,
                 ) ] 
   when class.name != "Runtime";
 
-// 
+// All fields of the Runtime class become a unary relation in AlleAlle.
 list[RelationDef] nextep2alleRelation (NaryRelation(Class class, nextepId field, str range, bool mult))
   = [ relation (
                 ) ] 
