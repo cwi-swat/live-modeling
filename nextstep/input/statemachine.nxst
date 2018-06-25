@@ -32,7 +32,8 @@ runtime {
       current in machine.states
 
       // visited is defined for all states of the machine
-      forall s: machine.states | (exists v: visited | v.state = s)
+      forall s: machine.states | (exists v: visited | v.state = s) && 
+                           count(visited where (visited.state = s)) = 1
 
       // both the trace from and to targets must be part of the states of the machine
       trace.from ++ trace.to in machine.states
@@ -44,7 +45,7 @@ runtime {
       some trace => exists s: trace | s.to = current
       
       // the nr of times that a state was visited depends of the nr of occurences in the trace
-      forall v: visisted | v.nr = count(trace where (trace.from = v.state))
+      forall v: visited | v.nr = count(trace where (trace.from = v.state))
     }
   } 
   
@@ -67,5 +68,6 @@ runtime {
 
 migration {
   // if the old current state does not exist anymore in the new machine states then the new current state is the machine's initial state
-  not (old Runtime.current in new Runtime.machine.states) => new Runtime.current = new Machine.initial
+  //forall old, new: Runtime | 
+  not (old.current in new.machine.states) => (new.current = new.machine.initial)
 }
