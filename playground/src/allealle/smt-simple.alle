@@ -1,0 +1,66 @@
+// Program changed while being executed (its new version): p
+// The execution state of the program (before it was changed): s
+// The new execution state of the program (computed on-the-fly): x
+// The set of constraints that ensure that the execution state is valid for the program: R(p, x)
+// The distance between the previous and new execution states: d(s, x)
+
+
+// ------ classes and associations (instantiated) --------------------------
+p_Machine (mId: id) = {<doors>}
+p_State (sId: id) = {<closed>, <opened>, <locked>}
+p_Trans (tId: id) = {<t1> .. <t4>}
+
+pn_states (mId: id, sId: id) = {<doors, closed>, <doors, opened>, <doors, locked>}
+pn_transitions (sId: id, tId: id) = {<closed, t1>, <closed, t2>, <opened, t3>, <locked, t4>}
+pn_target (tId: id, sId: id) = {<t1, opened>, <t2, locked>, <t3, closed>, <t4, closed>}
+pn_initial (mId: id, sId: id) = {<doors, closed>}
+
+xo_current (mId: id, sId: id) = {<doors, opened>}
+xo_visited (sId: id, val: int) = {<closed, 1>, <opened, 0>}
+
+
+// ------ classes and associations (that we are searching for) -------------
+xn_current (mId: id, sId: id) <= {<doors, closed>, <doors, opened>, <doors, locked>, <doors, s1>..<doors, s5>, <m1, s1>..<m1, s5>}
+xn_visited (sId: id, val: int) <= {<closed, ?>, <opened, ?>, <locked, ?>, <s1, ?> .. <s5, ?>}
+
+//d_current (mId: id, sId: id) <= {<doors, closed>, <doors, opened>, <doors, locked>}
+d_visited (sId: id, delta: int) <= {<closed, ?>, <opened, ?>, <locked, ?>}
+
+// ------ types of associations --------------------------------------------
+xn_current ⊆ p_Machine ⨯ p_State
+xn_visited[sId] = pn_states[sId]
+
+//d_current ⊆ p_Machine ⨯ p_State
+d_visited[sId] = xn_visited[sId]
+
+// ===== Semantic constraints for an(any) execution state of a program: R(p, x) ===================================
+// [1..1] for current state
+∀ m ∈ p_Machine | one xn_current ⨝ m
+
+// Current state of a machine is one of its states
+∀ c ∈ xn_current | one pn_states ⨝ c[mId] ⨝ c[sId]
+
+∀ s ∈ pn_states | some ((xn_visited ⨝ s)[count() as nr] where nr = 1)
+
+// Visited is bigger than zero 
+∀ v ∈ xn_visited | some (v where val >= 0)
+
+// ===== Migration instructions: M(p, s, x) ======================================================================
+// Use initial state as the default current state if the current state has been removed from the program          
+¬(xo_current[sId] ⊆ pn_states[sId]) ⇒ xn_current[sId] = pn_initial[sId]
+
+// ===== Distance between execution states d(s, x) ===============================================================
+// Set-based difference for the current state and the trace
+//d_current = (xo_current ∖ xn_current) ∪ (xn_current ∖ xo_current)
+
+// Distance between visited is a vector of differences |s-x|, united with plain values |x| for the newly added states
+∀ s ∈ xn_visited[sId] ∩ xo_visited[sId] | 
+  some (s ⨝ d_visited ⨝ xo_visited ⨝ xn_visited[val as xVal]) where (delta = |val - xVal|)
+∀ s ∈ xn_visited[sId] ∖ xo_visited[sId] |  
+  some (s ⨝ d_visited ⨝ xn_visited) where (delta = val)
+  
+// The goal is to minimize this distance
+objectives: 
+minimize ((xo_current ∖ xn_current) ∪ (xn_current ∖ xo_current))[count()], 
+minimize d_visited[sum(delta) as distance]
+

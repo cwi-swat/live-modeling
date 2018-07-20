@@ -1,5 +1,5 @@
 static {
-  class Machine (1..1) {      
+  class Machine {      
     states: State* //* means 'set'
     initial: State
     
@@ -11,17 +11,17 @@ static {
     }
   }
   
-  class State (5) {
+  class State {
     transitions: Trans*
   }
 
-  class Trans (5) {
+  class Trans  {
     target: State
   }
 }
 
 runtime {
-  class Runtime (1..1) {
+  class Runtime  {
     machine: Machine
     current: State
     visited: Visit*
@@ -49,7 +49,7 @@ runtime {
     }
   } 
   
-  class Visit (5) {
+  class Visit {
     state: State
     nr: int
     
@@ -57,7 +57,7 @@ runtime {
     invariant: nr >= 0
   }
   
-  class Step (10) {
+  class Step {
     from: State
     to: State
     
@@ -70,4 +70,29 @@ migration {
   // if the old current state does not exist anymore in the new machine states then the new current state is the machine's initial state
   //forall old, new: Runtime | 
   not (old.current in new.machine.states) => (new.current = new.machine.initial)
+}
+
+input {
+  old static
+  doors: Machine ( states: opened, closed, locked; initial: closed)
+  opened: State (transitions: t2 )
+  closed: State (transitions: t1, t3)
+  locked: State (transitions: t4)
+  t1: Trans (target: opened)
+  t2: Trans (target: closed)
+  t3: Trans (target: locked)
+  t4: Trans (target: closed)
+  
+  old runtime
+  x: Runtime (machine: doors; current: locked; visited: v1, v2, v3)
+  v1: Visit (state: opened; nr: 0)
+  v2: Visit (state: closed; nr: 1)
+  v3: Visit (state: locked; nr: 0)
+  
+  new static
+  doors: Machine ( states: opened, closed; initial: closed)
+  opened: State (transitions: t2 )
+  closed: State (transitions: t1 )
+  t1: Trans (target: opened)
+  t2: Trans (target: closed)
 }

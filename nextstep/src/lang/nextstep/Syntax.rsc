@@ -2,7 +2,7 @@ module lang::nextstep::Syntax
 
 extend lang::std::Layout;
 
-start syntax Spec = StaticDef static DynamicDef dynamic MigrationDef migration;
+start syntax Spec = StaticDef static DynamicDef dynamic MigrationDef migration InstanceDef instance;
 
 syntax StaticDef = "static" "{" Class* classes "}";
 
@@ -10,14 +10,17 @@ syntax DynamicDef = "runtime" "{" Class* classes "}";
 
 syntax MigrationDef = "migration" "{" Formula* rules "}";
 
-syntax Class = "class" ClassName name Super? Bounds? bounds "{" ClassBody body "}";
+syntax InstanceDef = "input" "{" "old" "static" ObjectDef* oldStat "old" "runtime" ObjectDef* oldRun "new" "static" ObjectDef* newStat "}";
 
-syntax Super = "extends" ClassName parent;
+//syntax Class = "class" ClassName name Super? Bounds? bounds "{" ClassBody body "}";
+syntax Class = "class" ClassName name "{" ClassBody body "}";
 
-syntax Bounds
-  = upperOnly:      "(" Int upper ")"
-  | upperAndLower:  "(" Int from ".." Int to ")"
-  ;
+//syntax Super = "extends" ClassName parent;
+
+//syntax Bounds
+//  = upperOnly:      "(" Int upper ")"
+//  | upperAndLower:  "(" Int from ".." Int to ")"
+//  ;
 
 syntax ClassBody = FieldDecl* fields Invariant* inv;
 
@@ -62,8 +65,8 @@ syntax Expr
   = bracket       "(" Expr ")"
   > var:          VarName 
   | lit:          Literal
-  > restrict:     Expr "where" RestrictStat
   | left dotJoin: Expr "." Expr
+  > restrict:     Expr "where" RestrictStat
   > left ( union: Expr "++" Expr
          | intersec: Expr "&" Expr
          | setDif: Expr "--" Expr
@@ -105,10 +108,21 @@ syntax Literal
   = intLit: Int
   ;
   
+syntax ObjectDef 
+  = Atom objectName ":" Type type "(" {FieldInstantiation ";"}* fields ")"
+  | {Atom ","}* objects ":" Type type
+  ;  
+
+syntax FieldInstantiation 
+  = 
+  VarName fieldName ":" {Atom ","}* atoms
+  | VarName fieldName ":" {Int ","}* atoms
+  ;
 
 lexical ClassName = ([A-Z] !<< [A-Z][a-zA-Z0-9_\']* !>> [a-zA-Z0-9_]) \ Keywords;
 lexical VarName = ([a-zA-Z] !<< [a-zA-Z][a-zA-Z0-9_\']* !>> [a-zA-Z0-9_]) \ Keywords;
+lexical Atom = ([a-zA-Z] !<< [a-zA-Z][a-zA-Z0-9_\']* !>> [a-zA-Z0-9_]) \ Keywords;
 
 lexical Int = [0-9]+;
 
-keyword Keywords = "static" | "runtime" | "migration" | "class" | "invariant" | "invariants" | "not" | "some" | "forall" | "exists" | "int" | "old" | "new";
+keyword Keywords = "static" | "runtime" | "migration" | "class" | "invariant" | "invariants" | "not" | "some" | "forall" | "exists" | "int" | "old" | "new" | "input";

@@ -5,11 +5,11 @@ static {
      order: OrderedPair*
   }
 
-  class Subsystem (3) {
+  class Subsystem (5) {
     ssa: Action*
   }
 
-  class Action (5) {}
+  class Action (10) {}
 
   class OrderedPair {
     action: Action
@@ -19,15 +19,7 @@ static {
 
 //dynamic metamodel
 runtime {
-  class Request (5) {
-    actions: Action*
-    task: Task
-
-    // Current request is a subset of the current task
-    invariant: actions in task.actions 
-  }
-
-  class Queue (3) {
+  class Queue (5) {
     subsystem: Subsystem
     actions: QueuedAction*
 
@@ -43,29 +35,43 @@ runtime {
   }
 
   class Runtime (1) {
-    request: Request
+    request: Action*
     queues: Queue*
     task: Task
  
     invariants {
+      // Current request is a subset of the current task
+      request in task.actions 
+    
       // Each queued action of the task is removed from the request
-      forall q: queues, qa: q.actions | not (qa.item in request.actions)
+      forall q: queues | no (q.actions & request.actions)
 
       // An action cannot be queued if it succeeds an action that hasn't been queued yet (= that is still in the request)
-      
+      forall o: task.order | 
+        o.succeeds in request => o.action in request 
 
       // An action cannot be queued if it succeeds an action that hasn't been executed yet (= that is still in a queue)
       // unless these actions belong to one subsystem
-      
+      forall o: task.order | 
+        (exists q: Queue | o.succeeds in q.actions.item &&
+          not (o.action in q.subsystem.ssa) ) =>
+          not (exists q: Queue | o.action in q.actions.item)      
+
 
       // If actions from one subsystem are ordered, then they should be queued in the corresponding order
+      forall o: task.order |
+        (exists q: Queue | o.succeeds in q.actions.item && o.action in q.actions.item)
+          =>
+        (forall qa1: (queues.actions where queues.actions.item = o.succeeds), 
+                qa2: (queues.actions where queues.actions.item = o.action) |
+            qa1.index > qa2.index)                    
     } 
   }
 }
 
 migration {
   // If we add new actions to the task, put them into request
-  //forall old, new : Runtime |
+  //(forall old, new : Runtime |)
   (new.task.actions -- old.task.actions) in new.request.actions 
   
   //(new Task.actions -- old Task.actions) in new Runtime.request.actions
