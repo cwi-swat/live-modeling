@@ -4,6 +4,7 @@ import lang::nextstep::Syntax;
 import lang::nextstep::Resolver;
 import lang::nextstep::Extractor;
 import Parser;
+import Map;
 
 import IO;
 
@@ -13,7 +14,18 @@ void testExtraction(loc f) {
   Spec spc = parseFile(f);
   Models result = extract(spc, resolveTypes(spc));
  
-  printRels(result);
+  printModels(result);
+  //printRels(result);
+}
+
+void printModels(Models models) {
+  for (Model m <- domain(models)) {
+    println("----- MODEL: <m>");
+    for (NXBounds b <- models[m]) {
+      println("Relation: <nxRelation2str(b.r)>");
+      println("Tuples: <b.tup>");
+    }
+  }
 }
 
 void printRels(list[NXRelation] rels) {
@@ -30,3 +42,5 @@ void printRels(list[NXRelation] rels) {
 
 str rangeType2str(class(Class c)) = "<c.name>";
 str rangeType2str(intType()) = "int";
+str nxRelation2str(UnaryRelation(Class c)) = "<c.name>";
+str nxRelation2str(NaryRelation(relation, _,_,_)) = "<relation>";

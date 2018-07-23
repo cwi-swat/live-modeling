@@ -1,10 +1,16 @@
+/* Second step of the translation: 
+ * translate the intermediate model into AlleAlle structures
+ * OPT stands for optimization (of the resulting output in the relation of the generated constructs)
+ * contributors: ulyanatikhonova
+ */
+
 module lang::nextstep::Generator
 
-import translation::AST;   // AlleAlle
-import translation::theories::integer::AST;
+import lang::nextstep::Extractor;
+import translation::AST;                    // AlleAlle
+import translation::theories::integer::AST; // AlleAlle
 
-// SECOND STEP: -----------------------------------------------------------------
-// translate the intermediate model into AlleAlle structures
+
 list[RelationDef] translateRelations (list[NXRelation] relations)
   = [ *nextep2alleRelation(r) | r <- relations ];
 
@@ -46,7 +52,7 @@ list[RelationDef] nextep2alleRelation (NaryRelation(Class class, nextepId field,
 //list[NXRelation] class2relation(k:(Class)`class <ClassName x> extends <ClassName p> {<ClassBody cb>}`)
 // = [ UnaryRelation(k, lowerOf(b), upperOf(b)) ];
 
-//-------------- NAMING CONVENTIONS -------------------------------------------
+/* NAMING CONVENTIONS */
 // A class-correspondent prefix for atoms          
 str atomprefix(Class class) = toLowerCase("<class.name>");              
 
