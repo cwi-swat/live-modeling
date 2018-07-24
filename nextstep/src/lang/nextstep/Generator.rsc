@@ -1,68 +1,53 @@
 /* Second step of the translation: 
  * translate the intermediate model into AlleAlle structures
- * OPT stands for optimization (of the resulting output in the relation to the amount of the generated AlleAlle constructs)
+ * 
  * contributors: ulyanatikhonova
  */
 
 module lang::nextstep::Generator
 
 import lang::nextstep::Extractor;
+import lang::nextstep::Syntax;
 import translation::AST;                    // AlleAlle
 import translation::theories::integer::AST; // AlleAlle
 
 
 list[RelationDef] generateAlleRelations (Models models) 
-  = [nxRelation2alle(r, "pn_") | r <- models[oldStatic()]];
+  = [nxRelation2alle(r, "po_") | r <- models[oldStatic()]]
+  + [nxRelation2alle(r, "pn_") | r <- models[newStatic()]]
+  + [nxRelation2alle(r, "xo_") | r <- models[oldRuntime()]];
+  // + [nxRelation2alle(r, "xn_") | r <- generateNX4newruntime(models[oldRuntime()], models[newStatic()])]
+  // the latter one also needs atMost() bounds instead of exact()
 
-RelationDef nxRelation2alle (NXBounds(UnaryRelation r, set[NXTuple] nxtuples), str prefix) 
-  = relation ( prefix + "<r.class.name>", 
-                [ header("<r.class.name>" + "Id", id()) ], 
-                exact([tup([idd(toId(t.a))]) | t <- nxtuples]) 
+// Unary relation
+RelationDef nxRelation2alle (NXBounds b : bounds(UnaryRelation(Class c), 
+                                                  set[NXTuple] nxtuples), 
+                              str prefix) 
+  = relation ( prefix + "<c.name>", 
+                [ header("<c.name>" + "Id", id()) ], 
+                exact([tup([nxAtom2alle(t.a)]) | t <- nxtuples]) 
+              );
+              
+// Nary relation
+RelationDef nxRelation2alle (NXBounds b : bounds(NaryRelation(str relation, Class dom, RangeType ran, bool isSet), 
+                                                  set[NXTuple] nxtuples), 
+                              str prefix) 
+  = relation ( prefix + relation, 
+                [ nxType2alleHeader(dom), 
+                  nxType2alleHeader(ran) ], 
+                exact([ tup([nxAtom2alle(t.a), nxAtom2alle(t.b)]) | t <- nxtuples ]) 
               );
 
+HeaderAttribute nxType2alleHeader (Class c) = header("<c.name>" + "Id", id());
+HeaderAttribute nxType2alleHeader (intType c) = header(); // TODO: ???
 
+AlleValue nxAtom2alle (NXAtom atom: strAt(str a)) = idd(toId(t.a));
+// TODO: which constructor in Alle uses int ???
+AlleValue nxAtom2alle (NXAtom atom: intAt(int i)) = idd(toId(t.a));  
 
-//
-//list[RelationDef] translateRelations (list[NXRelation] relations)
-//  = [ *nextep2alleRelation(r) | r <- relations ];
-//
-//// Generate structural constraints (types and multiplicity of associations)
-//list[AlleFormula] restrictRelations (list[NXRelation] relations) = [];
-//
-//// Translate a unary (bounded class) relation into AlleAlle relation
-//list[RelationDef] nextep2alleRelation (UnaryRelation(Class class))
-//  = [relation ( unaryRelName(class), 
-//                [ header(atomprefix(class) + "Id", id()) ], 
-//                exact([ range( [id(atomprefix(class), low)], [id(atomprefix(class), up)]) ]) 
-//              )] ;
-//
-//    
-//
-//// Translate an n-ary (field) relation into AlleAlle relation
-//list[RelationDef] nextep2alleRelation (NaryRelation(Class class, nextepId field, str range, bool mult))
-//  = [ relation (
-//                ) ] 
-//  when class.name != "Runtime";
-//
-//// All fields of the Runtime class become a unary relation in AlleAlle.
-//list[RelationDef] nextep2alleRelation (NaryRelation(Class class, nextepId field, str range, bool mult))
-//  = [ relation (
-//                ) ] 
-//  when class.name == "Runtime";
-//
-//// All fields of an unbounded class are matched together into one n-ary relation 
-//list[RelationDef] nextep2alleRelation (NaryRelation(Class class, nextepId field, str range, bool mult))
-//  = [ relation (
-//                )] 
-//  when class.name != "Runtime" && 
-//    (Class)`class <ClassName _> <Super? _> {<ClassBody _>}` := class;
-//
-////list[NXRelation] class2relation(k:(Class)`class <ClassName x> extends <ClassName p> {<ClassBody cb>}`)
-//// = [ UnaryRelation(k, lowerOf(b), upperOf(b)) ];
-//
-///* NAMING CONVENTIONS */
-// A class-correspondent prefix for atoms          
-str atomprefix(Class class) = toLowerCase("<class.name>");              
-
-// A unary relation name
-str unaryRelName(Class class) = "<class.name>";
+// Generate NXRelations and NXBounds for the new run-time model
+set[NXBounds] generateNX4newruntime(set[NXBounds] oldruntime, set[NXBounds] newstatic) {
+  set[NXBounds] newruntime = {};
+  
+  return newruntime;
+}
