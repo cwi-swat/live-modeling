@@ -42,6 +42,7 @@ syntax Formula
   > neg:        "not" Formula
   > some:       "some" Expr
   | no:         "no" Expr
+  | \one:       "one" Expr
   > subset:     Expr "in" Expr
   | equality:   Expr "=" Expr
   > implies:    Formula "=\>" Formula
@@ -109,14 +110,13 @@ syntax Literal
   ;
   
 syntax ObjectDef 
-  = Atom objectName ":" Type type "(" {FieldInstantiation ";"}* fields ")"
-  | {Atom ","}* objects ":" Type type
+  = Type type Atom objectName  FieldInstantiation+ fields 
+  | Type type {Atom ","}* objects 
   ;  
 
 syntax FieldInstantiation 
-  = 
-  VarName fieldName ":" {Atom ","}* atoms
-  | VarName fieldName ":" {Int ","}* atoms
+  = VarName fieldName "=" {Atom ","}* atoms
+  | VarName fieldName "=" {Int ","}* atoms
   ;
 
 lexical ClassName = ([A-Z] !<< [A-Z][a-zA-Z0-9_\']* !>> [a-zA-Z0-9_]) \ Keywords;
@@ -125,4 +125,4 @@ lexical Atom = ([a-zA-Z] !<< [a-zA-Z][a-zA-Z0-9_\']* !>> [a-zA-Z0-9_]) \ Keyword
 
 lexical Int = [0-9]+;
 
-keyword Keywords = "static" | "runtime" | "migration" | "class" | "invariant" | "invariants" | "not" | "some" | "forall" | "exists" | "int" | "old" | "new" | "input";
+keyword Keywords = "static" | "runtime" | "migration" | "class" | "invariant" | "invariants" | "not" | "no" | "some" | "one" | "forall" | "exists" | "int" | "old" | "new" | "input";
