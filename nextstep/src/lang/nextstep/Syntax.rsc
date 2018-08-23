@@ -45,6 +45,7 @@ syntax Formula
   | \one:       "one" Expr
   > subset:     Expr "in" Expr
   | equality:   Expr "=" Expr
+  | inequality: Expr "!=" Expr
   > implies:    Formula "=\>" Formula
   | iff:        Formula "\<=\>" Formula
   > conj:       Formula "&&" Formula

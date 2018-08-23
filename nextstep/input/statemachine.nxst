@@ -31,8 +31,10 @@ runtime {
       // the current state must be part of the states connected to the machine
       current in machine.states
 
+      forall s:machine.states | one (visited.state & s)
+      forall v1:visited, v2:visisted | v1 != v2 => v1.state != v2.state
       // visited is defined for all states of the machine
-      forall s: machine.states | one (visited.state & s) 
+      //forall s: machine.states |  (visited.states.s) 
       //(exists v: visited | v.state = s) && count(visited where (visited.state = s)) = 1
 
       // both the trace from and to targets must be part of the states of the machine
@@ -54,7 +56,9 @@ runtime {
     nr: int
     
     // Nr must be positive
-    invariant: nr >= 0
+    invariants {
+       nr >= 0
+    }
   }
   
   //class Step {

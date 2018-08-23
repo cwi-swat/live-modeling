@@ -34,15 +34,68 @@ d_Runtime (RuntimeId : id) <= {<x>}
 d_Visit_nr (VisitId : id,delta : int) <= {<v3,?>,<v2,?>,<visit_new_2,?>,<visit_new_1,?>,<v1,?>}
 d_Visit_state (VisitId : id,StateId : id) <= {<v1,opened>,<visit_new_2,opened>,<visit_new_1,opened>,<v3,opened>,<v2,opened>,<v1,closed>,<visit_new_2,closed>,<visit_new_1,closed>,<v3,closed>,<v2,closed>,<v1,locked>,<v2,locked>,<v3,locked>,<visit_new_1,locked>,<visit_new_2,locked>}
 
+// Type constraints
+xn_Runtime_machine ⊆ xn_Runtime ⨯ pn_Machine
+xn_Runtime_current ⊆ xn_Runtime ⨯ pn_State
+xn_Runtime_visited ⊆ xn_Runtime ⨯ xn_Visit
+xn_Visit_nr[VisitId] ⊆ xn_Visit
+xn_Visit_state ⊆ xn_Visit ⨯ pn_State
 
-(forall xRuntime:xn_Runtime | (one (xRuntime |x| xn_Runtime_current)))
-(forall xRuntime:xn_Runtime | (one (xRuntime |x| xn_Runtime_machine)))
-(forall xVisit:xn_Visit | (one (xVisit |x| xn_Visit_nr)))
-(forall xVisit:xn_Visit | (one (xVisit |x| xn_Visit_state)))
-(forall xRuntime:d_Runtime | (one (xRuntime |x| d_Runtime_current)))
-(forall xRuntime:d_Runtime | (one (xRuntime |x| d_Runtime_machine)))
-(forall xVisit:d_Visit | (one (xVisit |x| d_Visit_nr)))
-(forall xVisit:d_Visit | (one (xVisit |x| d_Visit_state)))
+xn_Visit ⊆ xn_Runtime_visited[VisitId]
+
+// generic constraint, there is always only exactly one Runtime class
+one xn_Runtime
+
+// Define the multiplicity constraints of the declared fields inside Runtime
+∀ r ∈ xn_Runtime | (one r ⨝ xn_Runtime_machine) ∧ 
+                   (one r ⨝ xn_Runtime_current)
+
+// Be sure to constraint the number of Runtime classes to only does that are referenced
+xn_Visit ⊆ xn_Runtime_visited[VisitId]
+                   
+// the visited field inside the Runtime class is a set, no multiplicity constraints are needed for this
+
+∀ r ∈ xn_Runtime | ((r ⨝ xn_Runtime_current)[StateId] ⊆ ((r ⨝ xn_Runtime_machine)[MachineId] ⨝ pn_Machine_states)[StateId]) 
+                 ∧ (∀ s ∈ ((r ⨝ xn_Runtime_machine)[MachineId] ⨝ pn_Machine_states)[StateId] | 
+                      (one ((r ⨝ xn_Runtime_visited)[VisitId] ⨝ xn_Visit ⨝ xn_Visit_state)[StateId] ∩ s))  
+                 ∧ (∀ v1 ∈ (r ⨝ xn_Runtime_visited)[VisitId], v2 ∈ (r ⨝ xn_Runtime_visited)[VisitId] | v1 ≠ v2 ⇒ (v1 ⨝ xn_Visit_state)[StateId] ≠ (v2 ⨝ xn_Visit_state)[StateId])  
+
+//∀ s ∈ pn_State | one (s ⨝ xn_Visit_state)
+
+∀ v ∈ xn_Visit | (one xn_Visit_state ⨝ v) ∧ 
+                 (one xn_Visit_nr ⨝ v)
+
+// Define the constraints of the invariants defined in Visit
+∀ v ∈ xn_Visit | some (v ⨝ xn_Visit_nr) where val >= 0
+
+(¬ (xo_Runtime_current[StateId] ⊆ (xn_Runtime_machine[MachineId] ⨝ pn_Machine_states)[StateId])) 
+  ⇒ (xn_Runtime_current[StateId] = (xn_Runtime_machine[MachineId] ⨝ pn_Machine_initial)[StateId])
+
+// Distance declaration
+d_Runtime_machine = (xo_Runtime_machine ∖ xn_Runtime_machine) ∪ (xn_Runtime_machine ∖ xo_Runtime_machine)
+d_Runtime_current = (xo_Runtime_current ∖ xn_Runtime_current) ∪ (xn_Runtime_current ∖ xo_Runtime_current)
+d_Runtime_visited = (xo_Runtime_visited ∖ xn_Runtime_visited) ∪ (xn_Runtime_visited ∖ xo_Runtime_visited)
+//d_Visit = (xo_Visit ∖ xn_Visit) ∪ (xn_Visit ∖ xo_Visit)
+
+d_Visit_nr[VisitId] ⊆ xn_Visit_nr[VisitId]
+
+∀ v ∈ xn_Visit_nr |
+  (v[VisitId] ⊆ xo_Visit_nr[VisitId] ⇒ some (v ⨝ d_Visit_nr ⨝ xo_Visit_nr[val as oVal]) where delta = |val - oVal|) ∧ 
+  (¬ (v[VisitId] ⊆ xo_Visit_nr[VisitId]) ⇒ some (v ⨝ d_Visit_nr) where delta = val) 
+
+(∀ xRuntime ∈ xn_Runtime | (one (xRuntime ⨝ xn_Runtime_current)))
+(∀ xRuntime ∈ xn_Runtime | (one (xRuntime ⨝ xn_Runtime_machine)))
+(∀ xVisit ∈ xn_Visit | (one (xVisit ⨝ xn_Visit_nr)))
+(∀ xVisit ∈ xn_Visit | (one (xVisit ⨝ xn_Visit_state)))
+(∀ xRuntime ∈ d_Runtime | (one (xRuntime ⨝ d_Runtime_current)))
+(∀ xRuntime ∈ d_Runtime | (one (xRuntime ⨝ d_Runtime_machine)))
+(∀ xVisit ∈ d_Visit | (one (xVisit ⨝ d_Visit_nr)))
+(∀ xVisit ∈ d_Visit | (one (xVisit ⨝ d_Visit_state)))
+
+// The goal is to minimize this distance
+objectives: minimize d_Runtime_current[count()], minimize d_Runtime_visited[count()], minimize d_Visit_nr[sum(delta)]
 
 
  
+
+
