@@ -1,44 +1,39 @@
-po_Machine (MachineId : id) = {<doors>}
 po_Trans_target (TransId : id,StateId : id) = {<t1,opened>,<t2,closed>,<t4,closed>,<t3,locked>}
-po_State_transitions (StateId : id,TransId : id) = {<locked,t4>,<opened,t2>,<closed,t1>,<closed,t3>}
 po_Trans (TransId : id) = {<t4>,<t2>,<t3>,<t1>}
 po_Machine_initial (MachineId : id,StateId : id) = {<doors,closed>}
 po_State (StateId : id) = {<closed>,<locked>,<opened>}
+po_Machine (MachineId : id) = {<doors>}
+po_State_transitions (StateId : id,TransId : id) = {<locked,t4>,<opened,t2>,<closed,t1>,<closed,t3>}
 po_Machine_states (MachineId : id,StateId : id) = {<doors,locked>,<doors,closed>,<doors,opened>}
-pn_Machine_states (MachineId : id,StateId : id) = {<doors,closed>,<doors,opened>}
-pn_Machine (MachineId : id) = {<doors>}
 pn_Trans (TransId : id) = {<t2>,<t1>}
 pn_State (StateId : id) = {<closed>,<opened>}
 pn_Machine_initial (MachineId : id,StateId : id) = {<doors,closed>}
-pn_Trans_target (TransId : id,StateId : id) = {<t1,opened>,<t2,closed>}
 pn_State_transitions (StateId : id,TransId : id) = {<opened,t2>,<closed,t1>}
-
-xo_Visit_state (VisitId : id,StateId : id) = {<v1,opened>,<v2,closed>,<v3,locked>}
+pn_Machine_states (MachineId : id,StateId : id) = {<doors,closed>,<doors,opened>}
+pn_Machine (MachineId : id) = {<doors>}
+pn_Trans_target (TransId : id,StateId : id) = {<t1,opened>,<t2,closed>}
+xo_Runtime_visited (RuntimeId : id,VisitId : id) = {<x,v2>,<x,v1>,<x,v3>}
 xo_Runtime_machine (RuntimeId : id,MachineId : id) = {<x,doors>}
 xo_Runtime_current (RuntimeId : id,StateId : id) = {<x,locked>}
 xo_Visit_nr (VisitId : id,val : int) = {<v1,0>,<v3,0>,<v2,1>}
-xo_Runtime_visited (RuntimeId : id,VisitId : id) = {<x,v2>,<x,v1>,<x,v3>}
-xo_Runtime (RuntimeId : id) = {<x>}
 xo_Visit (VisitId : id) = {<v2>,<v3>,<v1>}
-
-xn_Runtime_machine (RuntimeId : id,MachineId : id) <= {<x,doors>}
-xn_Runtime_current (RuntimeId : id,StateId : id) <= {<x,opened>,<x,closed>,<x,locked>}
+xo_Runtime (RuntimeId : id) = {<x>}
+xo_Visit_state (VisitId : id,StateId : id) = {<v1,opened>,<v2,closed>,<v3,locked>}
 xn_Runtime_visited (RuntimeId : id,VisitId : id) <= {<x,visit_new_1>,<x,visit_new_2>,<x,v2>,<x,v1>,<x,v3>}
+xn_Runtime_current (RuntimeId : id,StateId : id) <= {<x,opened>,<x,closed>,<x,locked>}
+xn_Runtime_machine (RuntimeId : id,MachineId : id) <= {<x,doors>}
 xn_Visit (VisitId : id) <= {<visit_new_1>,<visit_new_2>,<v2>,<v3>,<v1>}
 xn_Runtime (RuntimeId : id) <= {<x>}
 xn_Visit_nr (VisitId : id,val : int) <= {<v3,?>,<v2,?>,<visit_new_2,?>,<visit_new_1,?>,<v1,?>}
 xn_Visit_state (VisitId : id,StateId : id) <= {<v1,opened>,<visit_new_2,opened>,<visit_new_1,opened>,<v3,opened>,<v2,opened>,<v1,closed>,<visit_new_2,closed>,<visit_new_1,closed>,<v3,closed>,<v2,closed>,<v1,locked>,<v2,locked>,<v3,locked>,<visit_new_1,locked>,<visit_new_2,locked>}
-
-d_Runtime_machine (RuntimeId : id,MachineId : id) <= {<x,doors>}
-d_Runtime_current (RuntimeId : id,StateId : id) <= {<x,opened>,<x,closed>,<x,locked>}
 d_Runtime_visited (RuntimeId : id,VisitId : id) <= {<x,visit_new_1>,<x,visit_new_2>,<x,v2>,<x,v1>,<x,v3>}
+d_Runtime_current (RuntimeId : id,StateId : id) <= {<x,opened>,<x,closed>,<x,locked>}
+d_Runtime_machine (RuntimeId : id,MachineId : id) <= {<x,doors>}
 d_Visit (VisitId : id) <= {<visit_new_1>,<visit_new_2>,<v2>,<v3>,<v1>}
 d_Runtime (RuntimeId : id) <= {<x>}
 d_Visit_nr (VisitId : id,delta : int) <= {<v3,?>,<v2,?>,<visit_new_2,?>,<visit_new_1,?>,<v1,?>}
 d_Visit_state (VisitId : id,StateId : id) <= {<v1,opened>,<visit_new_2,opened>,<visit_new_1,opened>,<v3,opened>,<v2,opened>,<v1,closed>,<visit_new_2,closed>,<visit_new_1,closed>,<v3,closed>,<v2,closed>,<v1,locked>,<v2,locked>,<v3,locked>,<visit_new_1,locked>,<visit_new_2,locked>}
 
-// The goal is to minimize this distance
-objectives: minimize d_Runtime_current[count()], minimize d_Visit_nr[sum(delta)]
 
 
 

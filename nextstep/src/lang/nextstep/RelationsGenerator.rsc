@@ -1,7 +1,7 @@
 /* Second step of the translation: 
  * translate the intermediate model into AlleAlle structures
  * 
- * contributors: ulyanatikhonova
+ * contributors: ulyanatikhonova, joukestoel
  */
 
 module lang::nextstep::RelationsGenerator
