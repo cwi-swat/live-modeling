@@ -35,6 +35,14 @@ d_Visit_nr (VisitId : id,delta : int) <= {<v3,?>,<v2,?>,<visit_new_2,?>,<visit_n
 d_Visit_state (VisitId : id,StateId : id) <= {<v1,opened>,<visit_new_2,opened>,<visit_new_1,opened>,<v3,opened>,<v2,opened>,<v1,closed>,<visit_new_2,closed>,<visit_new_1,closed>,<v3,closed>,<v2,closed>,<v1,locked>,<v2,locked>,<v3,locked>,<visit_new_1,locked>,<visit_new_2,locked>}
 
 
+(forall xRuntime:xn_Runtime | (one (xRuntime |x| xn_Runtime_current)))
+(forall xRuntime:xn_Runtime | (one (xRuntime |x| xn_Runtime_machine)))
+(forall xVisit:xn_Visit | (one (xVisit |x| xn_Visit_nr)))
+(forall xVisit:xn_Visit | (one (xVisit |x| xn_Visit_state)))
+(forall xRuntime:d_Runtime | (one (xRuntime |x| d_Runtime_current)))
+(forall xRuntime:d_Runtime | (one (xRuntime |x| d_Runtime_machine)))
+(forall xVisit:d_Visit | (one (xVisit |x| d_Visit_nr)))
+(forall xVisit:d_Visit | (one (xVisit |x| d_Visit_state)))
 
 
  

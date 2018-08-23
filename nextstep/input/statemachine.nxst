@@ -57,13 +57,13 @@ runtime {
     invariant: nr >= 0
   }
   
-  class Step {
-    from: State
-    to: State
-    
-    // it must be possible to transition to the given 'to' state from the given 'from' state
-    invariant: exists t: from.transitions | t.target = to
-  }
+  //class Step {
+  //  from: State
+  //  to: State
+  //  
+  //  // it must be possible to transition to the given 'to' state from the given 'from' state
+  //  invariant: exists t: from.transitions | t.target = to
+  //}
 }
 
 migration {

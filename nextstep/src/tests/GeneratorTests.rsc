@@ -21,7 +21,7 @@ void testGeneration() = testGeneration(|project://nextstep/input/statemachine.nx
 
 void testGeneration(loc f) {
   Spec spc = parseFile(f);
-  Models models = extract(spc, resolveTypes(spc));
+  Models models = addNewRuntime(extract(spc, resolveTypes(spc)));
  
   list[RelationDef] rels = generateAlleRelations(models);
   list[AlleFormula] forms = generateAlleConstraints(spc,models);
