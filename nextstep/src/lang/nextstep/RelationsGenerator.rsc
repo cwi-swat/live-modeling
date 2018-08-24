@@ -15,15 +15,16 @@ import String;
 import IO;
 
 Models addNewRuntime (Models models) 
-  = models +
-    (newRuntime(): generateNX4NewRuntime(models[oldRuntime()], models[oldStatic()], models[newStatic()]));  
+  = models 
+  + (newRuntime(): generateNX4NewRuntime(models[oldRuntime()], models[oldStatic()], models[newStatic()]))
+  + (distance(): generateNX4NewRuntime(models[oldRuntime()], models[oldStatic()], models[newStatic()]));  
 
 list[RelationDef] generateAlleRelations (Models models) 
   = [genFixedBoundsRel(r, "po") | r <- models[oldStatic()]]
   + [genFixedBoundsRel(r, "pn") | r <- models[newStatic()]]
   + [genFixedBoundsRel(r, "xo") | r <- models[oldRuntime()]]
   + [genUpperBoundsRel(r, "xn") | r <- models[newRuntime()]]
-  + [genDistanceRel(r, "d") | r <- models[newRuntime()]];
+  + [genDistanceRel(r, "d") | r <- models[distance()]];
 
 // Unary relation
 RelationDef genFixedBoundsRel (bounds(UnaryRelation(Class c), set[NXTuple] nxtuples), str prefix) 

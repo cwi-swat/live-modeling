@@ -43,6 +43,7 @@ data Model
  | newStatic()
  | oldRuntime()
  | newRuntime()
+ | distance()
  ;
 
 alias Models = map[Model, set[NXBounds]];
