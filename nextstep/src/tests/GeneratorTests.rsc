@@ -15,7 +15,9 @@ import translation::theories::integer::Unparser;
 import Parser;
 import Map;
 import IO;
+import Set;
 import util::Maybe;
+
 
 void testGeneration() = testGeneration(|project://nextstep/input/statemachine.nxst|);
 
@@ -23,10 +25,10 @@ void testGeneration(loc f) {
   Spec spc = parseFile(f);
   Models models = addNewRuntime(extract(spc, resolveTypes(spc)));
  
-  list[RelationDef] rels = generateAlleRelations(models);
-  list[AlleFormula] forms = generateAlleConstraints(spc,models);
+  NX2AlleMapping rels = generateAlleRelations(models);
+  list[AlleFormula] forms = generateAlleConstraints(spc, models);
   
-  str alleSpec = unparse(problem(rels, forms, nothing(), nothing()));
+  str alleSpec = unparse(problem(toList(rels.alle), forms, nothing(), nothing()));
   
   writeFile(|project://nextstep/output/<f[extension = "alle"].file>|, alleSpec);
 }
