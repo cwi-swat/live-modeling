@@ -35,19 +35,19 @@ xn_Runtime_machine (RuntimeId : id,MachineId : id) <= {<x,doors>}
 xo_Runtime_visited (RuntimeId : id,VisitId : id) = {<x,v2>,<x,v1>,<x,v3>}
 
 
-(forall xRuntime:xn_Runtime | (one (xRuntime |x| xn_Runtime_current)))
-(forall xRuntime:xn_Runtime | (one (xRuntime |x| xn_Runtime_machine)))
-(forall xVisit:xn_Visit | (one (xVisit |x| xn_Visit_nr)))
-(forall xVisit:xn_Visit | (one (xVisit |x| xn_Visit_state)))
-(forall xRuntime:d_Runtime | (one (xRuntime |x| d_Runtime_current)))
-(forall xRuntime:d_Runtime | (one (xRuntime |x| d_Runtime_machine)))
-(forall xVisit:d_Visit | (one (xVisit |x| d_Visit_nr)))
-(forall xVisit:d_Visit | (one (xVisit |x| d_Visit_state)))
-(xn_Runtime_current in (xn_Runtime x pn_State))
-(xn_Runtime_visited in (xn_Runtime x xn_Visit))
-(xn_Runtime_machine in (xn_Runtime x pn_Machine))
-((xn_Visit_nr[VisitId]) in xn_Visit)
-(xn_Visit_state in (xn_Visit x pn_State))
+(∀ xRuntime ∈ xn_Runtime | (one (xRuntime ⨝ xn_Runtime_current)))
+(∀ xVisit ∈ xn_Visit | (one (xVisit ⨝ xn_Visit_nr)))
+(∀ xRuntime ∈ xn_Runtime | (one (xRuntime ⨝ xn_Runtime_machine)))
+(∀ xVisit ∈ xn_Visit | (one (xVisit ⨝ xn_Visit_state)))
+(∀ xVisit ∈ d_Visit | (one (xVisit ⨝ d_Visit_state)))
+(∀ xVisit ∈ d_Visit | (one (xVisit ⨝ d_Visit_nr)))
+(∀ xRuntime ∈ d_Runtime | (one (xRuntime ⨝ d_Runtime_current)))
+(∀ xRuntime ∈ d_Runtime | (one (xRuntime ⨝ d_Runtime_machine)))
+(xn_Runtime_current ⊆ (xn_Runtime ⨯ pn_State))
+(xn_Runtime_visited ⊆ (xn_Runtime ⨯ xn_Visit))
+((xn_Visit_nr[VisitId]) ⊆ xn_Visit)
+(xn_Runtime_machine ⊆ (xn_Runtime ⨯ pn_Machine))
+(xn_Visit_state ⊆ (xn_Visit ⨯ pn_State))
 
 
  

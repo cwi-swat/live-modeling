@@ -26,7 +26,7 @@ void testGeneration(loc f) {
   Models models = addNewRuntime(extract(spc, resolveTypes(spc)));
  
   NX2AlleMapping rels = generateAlleRelations(models);
-  list[AlleFormula] forms = generateAlleConstraints(spc, models);
+  list[AlleFormula] forms = generateAlleConstraints(spc, rels);
   
   str alleSpec = unparse(problem(toList(rels.alle), forms, nothing(), nothing()));
   

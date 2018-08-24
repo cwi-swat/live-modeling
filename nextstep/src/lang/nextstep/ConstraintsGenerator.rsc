@@ -14,44 +14,32 @@ import translation::AST;
 import translation::theories::integer::AST; 
 import lang::nextstep::RelationsGenerator;
 import IO;
+import List;
 
-list[AlleFormula] generateAlleConstraints(Spec spc, Models models) 
-  = [singletonMultiplicityConstraint(relName, dom, "xn") | bounds(NaryRelation(relName, dom, ran, false), _) <- models[newRuntime()]]
-  + [singletonMultiplicityConstraint(relName, dom, "d") | bounds(NaryRelation(relName, dom, ran, false), _) <- models[newRuntime()]]
-  + [typeConstraint(relName, dom, ran, "xn", spc) | bounds(NaryRelation(relName, dom, ran, isSet), _) <- models[newRuntime()]];
+list[AlleFormula] generateAlleConstraints(Spec spec, NX2AlleMapping relations) 
+  = [singletonMultiplicityConstraint(relName, dom, "xn") | <NaryRelation(relName, dom, ran, false), _, newRuntime()> <- relations]
+  + [singletonMultiplicityConstraint(relName, dom, "d") | <NaryRelation(relName, dom, ran, false), _, distance()> <- relations]
+  + [typeConstraint(relName, dom, ran, "xn", relations) | <NaryRelation(relName, dom, ran, _), _, newRuntime()> <- relations];
 
-// naming conventions
-str getClassName(Class c, Spec spec) 
-  = "pn_<c.name>"
-  when c <- spec.static.classes;
-  
-str getClassName(Class c, Spec spec) 
-  = "xn_<c.name>"
-  when c <- spec.\dynamic.classes;
-  
-str getRelName(str relName)
-  = "xn_<relName>";
-  
-str getAttrName() = "" ;
+// Get an AlleAlle relation that corresponds to the Nextep class
+RelationDef lookupAlleRelation(Class class, list[Model] models, NX2AlleMapping relations) {
+  list[RelationDef] result
+    = [r | <UnaryRelation(class), r, model> <- relations, model <- models];
+  println(result);
+  return head(result);
+}
 
-// structure
+// structure constraints
 AlleFormula singletonMultiplicityConstraint (str relName, Class dom, str prefix)
   = universal([varDecl("x<dom.name>", relvar("<prefix>_<dom.name>"))], 
               exactlyOne(naturalJoin(relvar("x<dom.name>"), relvar("<prefix>_<relName>"))));
   
-AlleFormula typeConstraint(str relName, Class dom, ran: class(Class c), str prefix, Spec spec)
+AlleFormula typeConstraint(str relName, Class dom, ran: class(Class c), str prefix, NX2AlleMapping relations)
   = subset(relvar("<prefix>_<relName>"),
            product(relvar("<prefix>_<dom.name>"), 
-                   relvar("pn_<c.name>")))
-    when c <- spec.static.classes; 
-                    
-AlleFormula typeConstraint(str relName, Class dom, ran: class(Class c), str prefix, Spec spec)
-  = subset(relvar("<prefix>_<relName>"),
-           product(relvar("<prefix>_<dom.name>"), 
-                   relvar("<prefix>_<c.name>")))
-    when c <- spec.\dynamic.classes;  
+                   relvar(lookupAlleRelation(c, [newStatic(), newRuntime()], relations).name)));                
 
-AlleFormula typeConstraint(str relName, Class dom, ran: intType(), str prefix, Spec spc)
+AlleFormula typeConstraint(str relName, Class dom, ran: intType(), str prefix, NX2AlleMapping relations)
   = subset(project(relvar("<prefix>_<relName>"), ["<dom.name>Id"]),
            relvar("<prefix>_<dom.name>"));  
 
