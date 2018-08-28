@@ -83,7 +83,7 @@ AlleFormula translate((Formula)`not <Formula form>`) = \neg(translate(form));
 AlleExpr translate((Expr)`( <Expr ex> )`) = tranlsate(ex);
 AlleExpr translate(ex:(Expr)`<VarName v>`) = relvar(ex@alleRel.name);  
 //  | lit:          Literal
-//  | left dotJoin: Expr "." Expr
+AlleExpr translate(ex:(Expr)`<Expr lhs>.<Expr rhs>`) = \false();
 
 
 
