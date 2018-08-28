@@ -81,9 +81,10 @@ AlleFormula translate((Formula)`not <Formula form>`) = \neg(translate(form));
 
 
 AlleExpr translate((Expr)`( <Expr ex> )`) = tranlsate(ex);
-AlleExpr translate(ex:(Expr)`<VarName v>`) = relvar(ex@alleRel.name);  
+AlleExpr translate(ex:(Expr)`<VarName v>`) = relvar(ex@alleRel);  
 //  | lit:          Literal
-AlleExpr translate(ex:(Expr)`<Expr lhs>.<Expr rhs>`) = \false();
+AlleExpr translate(ex:(Expr)`<Expr lhs>.<Expr rhs>`) 
+  = project(naturalJoin(translate(lhs), translate(rhs)), [a.name| a <- ex@header]);
 
 
 
