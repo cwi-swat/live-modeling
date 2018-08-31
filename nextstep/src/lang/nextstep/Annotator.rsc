@@ -238,8 +238,8 @@ void resolve(e:(Expr)`<Literal l>`, Scope scp, Collect col) {
 
 void resolve(e:(Expr)`<Expr lhs>.<Expr rhs>`, Scope scp, Collect col) {
   resolve(lhs,scp,col);
-  Cls lhsCls;
   
+  Cls lhsCls;
   if ((Expr)`<VarName v>` := lhs) {
     lhsCls = col.lookupFieldCls(scp.cls,"<v>");
   } else {
@@ -257,25 +257,24 @@ void resolve(e:(Expr)`<Expr lhs>.<Expr rhs>`, Scope scp, Collect col) {
 }
 
 //  > restrict:     Expr "where" RestrictStat
-//  > left ( union: Expr "++" Expr
-void resolve(e:(Expr)`<Expr lhs> & <Expr rhs>`, Scope scp, Collect col) {
+
+private void resolveUnionCompatibleExpr(Expr orig, Expr lhs, Expr rhs, Scope scp, Collect col) {
   resolve(lhs,scp,col);
   resolve(rhs,scp,col);
   
   list[HeaderAttribute] lhsHeader = col.getHeader(lhs@\loc);
   list[HeaderAttribute] rhsHeader = col.getHeader(rhs@\loc);
-  
-  println(lhs);
-  println(rhs);
-  println("lhs header: <lhsHeader>, rhs header: <rhsHeader>");
-  
+    
   if (lhsHeader != rhsHeader) {
     throw ("Intersection only works on compatible classes");
   }
   
-  col.addHeader(e@\loc,lhsHeader);
+  col.addHeader(orig@\loc, lhsHeader);
 }
-//         | setDif: Expr "--" Expr
+
+void resolve(e:(Expr)`<Expr lhs> ++ <Expr rhs>`, Scope scp, Collect col) { resolveUnionCompatibleExpr(lhs,rhs,scp,col); } 
+void resolve(e:(Expr)`<Expr lhs> & <Expr rhs>`, Scope scp, Collect col) { resolveUnionCompatibleExpr(lhs,rhs,scp,col); }
+void resolve(e:(Expr)`<Expr lhs> -- <Expr rhs>`, Scope scp, Collect col) { resolveUnionCompatibleExpr(lhs,rhs,scp,col); }
 //         )
 //  > transCl:      "^" Expr
 //  | reflTrans:    "*" Expr
