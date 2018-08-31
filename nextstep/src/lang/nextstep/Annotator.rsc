@@ -179,9 +179,6 @@ void resolve((Formula)`<Formula lhs> || <Formula rhs>`, Scope scp, Collect col) 
 private str findType((Expr)`<Expr _>.<Expr rhs>`, Collect col) = findType(rhs,col);
 private str findType(ex:(Expr)`<VarName v>`, Collect col) = col.getType(ex@\loc);
 
-private AlleRel findRel((Expr)`<Expr _>.<Expr rhs>`, Collect col) = findRel(rhs,col);
-private AlleRel findRel(ex:(Expr)`<VarName v>`, Collect col) = col.getAlleRel(ex@\loc);
-
 private Scope resolveQuantDecl((QuantDecl)`<VarName v>: <Expr expr>`, Scope scp, Collect col) {
   resolve(expr, scp, col);
     
@@ -220,11 +217,19 @@ void resolve(e:(Expr)`( <Expr expr> )`, Scope scp, Collect col) {
 }
 
 void resolve(e:(Expr)`<VarName v>`, Scope scp, Collect col) {
-  AlleRel r = col.lookupField("<v>",scp.cls);    
+  AlleRel r;
+  try {
+    // Probably a referenced field
+    r = col.lookupField("<v>",scp.cls);
+    col.addType(e@\loc,col.lookupFieldCls(scp.cls,"<v>").name);
+  } catch: {
+    // could also be a class ...
+    r = col.lookupClass("<v>");
+    col.addType(e@\loc,"<v>");
+  }  
   
   col.addAlleRel(e@\loc,r);
   col.addHeader(e@\loc,r.header);
-  col.addType(e@\loc,col.lookupFieldCls(scp.cls,"<v>").name);
 } 
 
 void resolve(e:(Expr)`<Literal l>`, Scope scp, Collect col) {
@@ -232,19 +237,23 @@ void resolve(e:(Expr)`<Literal l>`, Scope scp, Collect col) {
 }
 
 void resolve(e:(Expr)`<Expr lhs>.<Expr rhs>`, Scope scp, Collect col) {
-  if ((Expr)`<VarName v>` := lhs) {
-    resolve(lhs,scp,col);
-    Cls lhsCls = col.lookupFieldCls(scp.cls,"<v>");
-    resolve(rhs,scope(lhsCls,scp),col);
+  resolve(lhs,scp,col);
+  Cls lhsCls;
   
-    AlleRel lRel = col.lookupField("<v>",scp.cls);
-    list[HeaderAttribute] rHeader = col.getHeader(rhs@\loc);
-    list[HeaderAttribute] joinedHeader = [h | HeaderAttribute h <- lRel.header, h notin rHeader] + [h | HeaderAttribute h <- rHeader, h notin lRel.header];
-        
-    col.addHeader(e@\loc, joinedHeader); 
+  if ((Expr)`<VarName v>` := lhs) {
+    lhsCls = col.lookupFieldCls(scp.cls,"<v>");
   } else {
-    throw "LHS of join is not a VarName?";
+    lhsCls = col.lookupCls(findType(lhs,col));
   }
+  
+  resolve(rhs,scope(lhsCls,scp),col);
+  
+  list[HeaderAttribute] lHeader = col.getHeader(lhs@\loc);
+  list[HeaderAttribute] rHeader = col.getHeader(rhs@\loc);
+  
+  list[HeaderAttribute] joinedHeader = [h | HeaderAttribute h <- lHeader, h notin rHeader] + [h | HeaderAttribute h <- rHeader, h notin lHeader];
+        
+  col.addHeader(e@\loc, joinedHeader); 
 }
 
 //  > restrict:     Expr "where" RestrictStat
