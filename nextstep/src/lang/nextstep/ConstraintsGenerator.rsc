@@ -55,8 +55,7 @@ AlleFormula typeConstraint(str relName, Class dom, ran: intType(), str prefix, N
 list[AlleFormula] translate(Spec spc) = translate(spc.\dynamic); // + translate(spc.migration);
 list[AlleFormula] translate((DynamicDef)`runtime { <Class* cs> }`) = [*translate(c) | Class c <- cs];
 list[AlleFormula] translate((MigrationDef)`migration { <Formula* rules>}`) =  [translate(f) | Formula f <- rules];
-list[AlleFormula] translate(c:(Class)`class <ClassName _> { <ClassBody body>}`) 
-  = [universal([varDecl("x", relvar(c@alleRel))], form )| form <- translate(body)]; 
+list[AlleFormula] translate(c:(Class)`class <ClassName _> { <ClassBody body>}`) = translate(body);  
 list[AlleFormula] translate((ClassBody)`<FieldDecl* _> <Invariant* inv>`) = [*translate(i) | Invariant i <- inv];
 list[AlleFormula] translate((Invariant)`invariant: <Formula form>`) = [translate(form)];  
 list[AlleFormula] translate((Invariant)`invariants { <Formula+ forms> }`) = [translate(f) | Formula f <- forms];
@@ -80,20 +79,25 @@ AlleFormula translate(f:(Formula)`exists <{QuantDecl ","}+ decls> | <Formula for
   = existential([varDecl("<v>", translate(expr)) | (QuantDecl)`<VarName v> : <Expr expr>` <- decls], 
               translate(form));
 
+
 // !!!!!! arithmetics!!!
 AlleFormula translate((Formula)`<Expr lhs> \>= <Expr rhs>`) =
-  universal([varDecl("nn", relvar(lhs@alleRel))], nonEmpty(select(relvar("nn"), gte(att("val"),translateConstraintExpr(rhs)))));
+  universal([varDecl("nn", relvar(lhs@alleRel))], 
+              nonEmpty(select(relvar("nn"), gte(att("val"),translateConstraintExpr(rhs)))));
 
 AlleFormula translate((Formula)`<Expr lhs> \> <Expr rhs>`) = \false;
 AlleFormula translate((Formula)`<Expr lhs> \<= <Expr rhs>`) = \false;
 AlleFormula translate((Formula)`<Expr lhs> \< <Expr rhs>`) = \false;
-
 
 AlleExpr translate((Expr)`( <Expr ex> )`) = translate(ex);
 AlleExpr translate(ex:(Expr)`<VarName v>`) = relvar(ex@alleRel);  
 AlleExpr translate((Expr)`<Literal l>`) = translate(l);
 AlleExpr translate(ex:(Expr)`<Expr lhs>.<Expr rhs>`) 
   = project(naturalJoin(translate(lhs), translate(rhs)), [a.name| a <- ex@header]);
+//AlleExpr translate(ex:(Expr)`<Expr lhs>.<Expr rhs>`) 
+//  = project(naturalJoin(project(naturalJoin(relvar(classBoundVar), translate(lhs)), [a.name| a <- lhs@header]), 
+//            translate(rhs)), [a.name| a <- ex@header])
+//  when lhs := (Expr)`<VarName v>`;
 AlleExpr translate((Expr)`<Expr lhs> ++ <Expr rhs>`) = union(translate(lhs), translate(rhs));
 AlleExpr translate((Expr)`<Expr lhs> & <Expr rhs>`) = intersection(translate(lhs), translate(rhs));
 AlleExpr translate((Expr)`<Expr lhs> -- <Expr rhs>`) = difference(translate(lhs), translate(rhs));
@@ -115,6 +119,32 @@ CriteriaExpr translateConstraintExpr((Expr)`<Literal l>`) = litt(translate(l));
 // so we should be able to produce a proper attribute from relations join
 CriteriaExpr translate((QualifiedName)`<VarName lhs> ("." <VarName rhs>)*`) = att("");
 
+
+// !!!!!! arithmetics!!!
+//AlleFormula translate((Formula)`<Expr lhs> \>= <Expr rhs>`) 
+//  = nonEmpty(select(  ,  gte( , )));
+//// We need a different treatment for the whole arithmetic expression 
+//// (including what possibly follows next: +, -, *, etc.)
+//AlleFormula translate((Formula)`<Expr lhs> \>= <Int rhs>`) 
+//  = nonEmpty(select(  ,  ));
+//  
+AlleFormula translate((Formula)`<Expr lhs> \> <Expr rhs>`) = \false;
+AlleFormula translate((Formula)`<Expr lhs> \<= <Expr rhs>`) = \false;
+AlleFormula translate((Formula)`<Expr lhs> \< <Expr rhs>`) = \false;
+
+
+ //Expr
+ // = count:      "count" "(" Expr ")"
+ // | avg:        "avg" "(" Expr ")"
+ // | min:        "min" "(" Expr ")"
+ // | max:        "max" "(" Expr ")"
+ // | abs:        "|" Expr "|"
+ // > left ( div: Expr "\\" Expr
+ //        | mul: Expr "*" Expr
+ //        > add: Expr "+" Expr
+ //        | sub: Expr "-" Expr
+ //        )
+ // ;
 
 // DISTANCE
 

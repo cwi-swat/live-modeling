@@ -1,0 +1,140 @@
+static {
+  class Machine {      
+    states: State* //* means 'set'
+    initial: State
+    
+    invariants {
+      // initial must be a known state
+      forall inst : Machine | inst.initial in inst.states
+      // all states that are targeted in the transitions must be part of the machine
+      forall inst : Machine | inst.states.transitions.target in inst.states
+    }
+  }
+  
+  class State {
+    transitions: Trans*
+  }
+
+  class Trans  {
+    target: State
+  }
+}
+
+runtime {
+  class Runtime  {
+    machine: Machine
+    current: State
+    visited: Visit*
+    //trace: Step*
+    
+    invariants {
+      // the current state must be part of the states connected to the machine
+      forall inst : Runtime | inst.current in inst.machine.states
+
+      forall inst : Runtime | forall s:inst.machine.states | one (inst.visited.state & s)
+      forall inst : Runtime | forall v1:inst.visited, v2:inst.visited | v1 != v2 => v1.state != v2.state
+      // visited is defined for all states of the machine
+      //forall s: machine.states |  (visited.states.s) 
+      //(exists v: visited | v.state = s) && count(visited where (visited.state = s)) = 1
+
+      // both the trace from and to targets must be part of the states of the machine
+      //trace.from ++ trace.to in machine.states
+      //
+      //// all to targets in the trace must be reachable from the initial state of the machine
+      //trace.to in ^machine.initial.transitions.target
+      //
+      //// if there is a trace, the current state must be part of it
+      //some trace => exists s: trace | s.to = current
+      
+      // the nr of times that a state was visited depends of the nr of occurences in the trace
+      //forall v: visited | v.nr = count(trace where (trace.from = v.state))
+    }
+  } 
+  
+  class Visit {
+    state: State
+    nr: int
+    
+    // Nr must be positive
+    invariants {
+       forall inst : Visit | inst.nr >= 0
+    }
+  }
+  
+  //class Step {
+  //  from: State
+  //  to: State
+  //  
+  //  // it must be possible to transition to the given 'to' state from the given 'from' state
+  //  invariant: exists t: from.transitions | t.target = to
+  //}
+}
+
+migration {
+  // if the old current state does not exist anymore in the new machine states then the new current state is the machine's initial state
+  //forall old, new: Runtime | 
+  not (old.current in new.machine.states) => (new.current = new.machine.initial)
+}
+
+input {
+  old static
+    Machine doors 
+      states = opened, closed, locked
+      initial = closed
+    
+    State opened
+      transitions = t2
+    
+    State closed
+      transitions = t1,t3
+    
+    State locked
+      transitions = t4
+          
+    Trans t1 
+      target = opened
+    
+    Trans t2
+      target = closed
+    
+    Trans t3
+      target = locked
+      
+    Trans t4
+      target = closed  
+
+  old runtime
+    Runtime x 
+      machine = doors 
+      current = locked 
+      visited = v1, v2, v3
+      
+    Visit v1 
+      state = opened 
+      nr = 0
+  
+    Visit v2 
+      state = closed 
+      nr = 1
+  
+    Visit v3 
+      state = locked 
+      nr = 0
+  
+  new static
+    Machine doors 
+      states = opened, closed 
+      initial = closed
+      
+    State opened 
+      transitions = t2
+    
+    State closed 
+      transitions = t1
+      
+    Trans t1 
+      target = opened
+  
+    Trans t2 
+      target = closed
+}
