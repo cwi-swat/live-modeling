@@ -32,7 +32,7 @@ runtime {
       current in machine.states
 
       forall s:machine.states | one (visited.state & s)
-      forall v1:visited, v2:visisted | v1 != v2 => v1.state != v2.state
+      forall v1:visited, v2:visited | v1 != v2 => v1.state != v2.state
       // visited is defined for all states of the machine
       //forall s: machine.states |  (visited.states.s) 
       //(exists v: visited | v.state = s) && count(visited where (visited.state = s)) = 1
@@ -56,9 +56,7 @@ runtime {
     nr: int
     
     // Nr must be positive
-    invariants {
-       nr >= 0
-    }
+    invariant: nr >= 0
   }
   
   //class Step {
