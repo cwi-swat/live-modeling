@@ -17,11 +17,11 @@ Spec normalize(Spec spec) {
 }
 
 Class normalize(Class c) {
-  className = c.name;
+  Expr classExpr = [Expr]"<c.name>";
   
   Class result = top-down-break visit (c) {
     case (Formula)`<Formula form>` => 
-         (Formula)`forall inst : <VarName className> | <Formula form>`    
+         (Formula)`forall inst : <Expr classExpr> | <Formula form>`    
   };
   
   result = visit (result) {
