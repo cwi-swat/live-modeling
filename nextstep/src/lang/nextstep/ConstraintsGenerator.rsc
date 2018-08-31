@@ -13,9 +13,10 @@ import lang::nextstep::Syntax;
 import translation::AST;                    
 import translation::theories::integer::AST; 
 import lang::nextstep::RelationsGenerator;
+import lang::nextstep::Annotator;
 import IO;
 import List;
-
+import String;
 import ParseTree;
 
 //anno str Expr@alleRel;
@@ -51,20 +52,20 @@ AlleFormula typeConstraint(str relName, Class dom, ran: intType(), str prefix, N
   
 // SEMANTIC RELATIONS
 
-list[AlleFormula] translate(Spec spc) = translate(spc.\dynamic) + translate(spc.migration);
+list[AlleFormula] translate(Spec spc) = translate(spc.\dynamic); // + translate(spc.migration);
 list[AlleFormula] translate((DynamicDef)`runtime { <Class* cs> }`) = [*translate(c) | Class c <- cs];
-list[AlleFormula] translate((MigrationDef)`migration { <Formula* rules>}`) =  [translate(f) | Formula f <- f];
+list[AlleFormula] translate((MigrationDef)`migration { <Formula* rules>}`) =  [translate(f) | Formula f <- rules];
 list[AlleFormula] translate(c:(Class)`class <ClassName _> { <ClassBody body>}`) 
   = [universal([varDecl("x", relvar(c@alleRel))], form )| form <- translate(body)]; 
 list[AlleFormula] translate((ClassBody)`<FieldDecl* _> <Invariant* inv>`) = [*translate(i) | Invariant i <- inv];
 list[AlleFormula] translate((Invariant)`invariant: <Formula form>`) = [translate(form)];  
-list[AlleFormula] translate((Invariant)`invariants { Formula+ forms }`) = [translate(f) | Formula f <- forms];
+list[AlleFormula] translate((Invariant)`invariants { <Formula+ forms> }`) = [translate(f) | Formula f <- forms];
  
 AlleFormula translate((Formula)`( <Formula form> )`) = translate(form);
 AlleFormula translate((Formula)`not <Formula form>`) = negation(translate(form));
-AlleFormula translate((Formula)`some <Expr expr>`) = nonempty(translate(form));
-AlleFormula translate((Formula)`no <Expr expr>`) = empty(translate(form));
-AlleFormula translate((Formula)`one <Expr expr>`) = exactlyOne(translate(form));
+AlleFormula translate((Formula)`some <Expr expr>`) = nonempty(translate(expr));
+AlleFormula translate((Formula)`no <Expr expr>`) = empty(translate(expr));
+AlleFormula translate((Formula)`one <Expr expr>`) = exactlyOne(translate(expr));
 AlleFormula translate((Formula)`<Expr lhs> in <Expr rhs>`) = subset(translate(lhs), translate(rhs)); 
 AlleFormula translate((Formula)`<Expr lhs> = <Expr rhs>`) = equal(translate(lhs), translate(rhs)); 
 AlleFormula translate((Formula)`<Expr lhs> != <Expr rhs>`) = inequal(translate(lhs), translate(rhs)); 
@@ -73,14 +74,16 @@ AlleFormula translate((Formula)`<Formula lhs> \<=\> <Formula rhs>`) = equality(t
 AlleFormula translate((Formula)`<Formula lhs> && <Formula rhs>`) = conjunction(translate(lhs), translate(rhs)); 
 AlleFormula translate((Formula)`<Formula lhs> || <Formula rhs>`) = disjunction(translate(lhs), translate(rhs)); 
 AlleFormula translate((Formula)`forall <{QuantDecl ","}+ decls> | <Formula form>`) 
-  = universal([varDecl(toStr(v), translate(expr)) | (QuantDecl)`<VarName v> : <Expr expr>` <- decls], 
+  = universal([varDecl("<v>", translate(expr)) | (QuantDecl)`<VarName v> : <Expr expr>` <- decls], 
               translate(form));
 AlleFormula translate(f:(Formula)`exists <{QuantDecl ","}+ decls> | <Formula form>`) 
   = existential([varDecl("<v>", translate(expr)) | (QuantDecl)`<VarName v> : <Expr expr>` <- decls], 
               translate(form));
 
 // !!!!!! arithmetics!!!
-AlleFormula translate((Formula)`<Expr lhs> \>= <Expr rhs>`) = \false;
+AlleFormula translate((Formula)`<Expr lhs> \>= <Expr rhs>`) =
+  universal([varDecl("nn", relvar(lhs@alleRel))], nonEmpty(select(relvar("nn"), gte(att("val"),translateConstraintExpr(rhs)))));
+
 AlleFormula translate((Formula)`<Expr lhs> \> <Expr rhs>`) = \false;
 AlleFormula translate((Formula)`<Expr lhs> \<= <Expr rhs>`) = \false;
 AlleFormula translate((Formula)`<Expr lhs> \< <Expr rhs>`) = \false;
@@ -88,7 +91,7 @@ AlleFormula translate((Formula)`<Expr lhs> \< <Expr rhs>`) = \false;
 
 AlleExpr translate((Expr)`( <Expr ex> )`) = translate(ex);
 AlleExpr translate(ex:(Expr)`<VarName v>`) = relvar(ex@alleRel);  
-AlleExpr translate((Expr)`<Literal l>`) = intLit(toInt("<l>"));  // right???
+AlleExpr translate((Expr)`<Literal l>`) = translate(l);
 AlleExpr translate(ex:(Expr)`<Expr lhs>.<Expr rhs>`) 
   = project(naturalJoin(translate(lhs), translate(rhs)), [a.name| a <- ex@header]);
 AlleExpr translate((Expr)`<Expr lhs> ++ <Expr rhs>`) = union(translate(lhs), translate(rhs));
@@ -97,11 +100,15 @@ AlleExpr translate((Expr)`<Expr lhs> -- <Expr rhs>`) = difference(translate(lhs)
 //AlleExpr translate((Expr)`^<Expr ex>`) = closure(, translate(ex));
 //AlleExpr translate((Expr)`*<Expr ex> `) = reflexClosure(, translate(ex));
 AlleExpr translate(ex:(Expr)`<Expr lhs> where <RestrictStat rhs>`) 
-  = select(translate(lhs), translate(rhs));
+  = select(translate(lhs), translateConstraint(rhs));
 
-Criteria translate((RestrictStat)`(<RestrictStat restr>)`) = translate(restr);
-Criteria translate((RestrictStat)`<RestrictExpr lhs> = <RestrictExpr rhs>`) = equal(translate(lhs), translate(rhs));
-CriteriaExpr translate((RestrictExpr)`<QualifiedName att>`) = translate(att);
+AlleLiteral translate((Literal)`<Int i>`) = intLit(toInt("<i>"));
+
+Criteria translateConstraint((RestrictStat)`(<RestrictStat restr>)`) = translate(restr);
+Criteria translateConstraint((RestrictStat)`<RestrictExpr lhs> = <RestrictExpr rhs>`) = equal(translate(lhs), translate(rhs));
+
+CriteriaExpr translateConstraint((RestrictExpr)`<QualifiedName att>`) = translate(att);
+CriteriaExpr translateConstraintExpr((Expr)`<Literal l>`) = litt(translate(l));
 
 // ??????????
 // qualified name is in fact our dot notation for the navigation of objects, 
