@@ -5,6 +5,7 @@ import lang::nextstep::Resolver;
 import lang::nextstep::Extractor;
 import lang::nextstep::RelationsGenerator;
 import lang::nextstep::ConstraintsGenerator;
+import lang::nextstep::Annotator;
 
 import translation::AST;                    // AlleAlle
 import translation::theories::integer::AST; // AlleAlle
@@ -26,7 +27,9 @@ void testGeneration(loc f) {
   Models models = addNewRuntime(extract(spc, resolveTypes(spc)));
  
   NX2AlleMapping rels = generateAlleRelations(models);
-  list[AlleFormula] forms = generateAlleConstraints(spc, rels);
+  Spec annotatedSpc = annotate(spc,rels);
+  
+  list[AlleFormula] forms = generateAlleConstraints(annotatedSpc, rels) + translate(annotatedSpc);
   
   str alleSpec = unparse(problem(toList(rels.alle), forms, nothing(), nothing()));
   
