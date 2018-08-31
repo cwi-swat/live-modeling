@@ -79,15 +79,6 @@ AlleFormula translate(f:(Formula)`exists <{QuantDecl ","}+ decls> | <Formula for
   = existential([varDecl("<v>", translate(expr)) | (QuantDecl)`<VarName v> : <Expr expr>` <- decls], 
               translate(form));
 
-
-// !!!!!! arithmetics!!!
-AlleFormula translate((Formula)`<Expr lhs> \>= <Expr rhs>`) =
-   nonEmpty(select(translate(lhs), gte(att("val"),translateConstraintExpr(rhs))));
-
-AlleFormula translate((Formula)`<Expr lhs> \> <Expr rhs>`) = \false;
-AlleFormula translate((Formula)`<Expr lhs> \<= <Expr rhs>`) = \false;
-AlleFormula translate((Formula)`<Expr lhs> \< <Expr rhs>`) = \false;
-
 AlleExpr translate((Expr)`( <Expr ex> )`) = translate(ex);
 AlleExpr translate(ex:(Expr)`<VarName v>`) = relvar(ex@alleRel);  
 AlleExpr translate((Expr)`<Literal l>`) = translate(l);
@@ -119,7 +110,18 @@ CriteriaExpr translateConstraintExpr((Expr)`<Literal l>`) = litt(translate(l));
 CriteriaExpr translate((QualifiedName)`<VarName lhs> ("." <VarName rhs>)*`) = att("");
 
 
-// !!!!!! arithmetics!!!
+// arithmetics
+// the following works only for rhs that is integer
+AlleFormula translate((Formula)`<Expr lhs> \>= <Literal rhs>`) =
+   nonEmpty(select(translate(lhs), 
+            gte(att("val"), translateConstraintExpr(rhs))));
+AlleFormula translate((Formula)`<Expr lhs> \>= <Expr rhs>`) =
+   nonEmpty(select(product(rename(translate(lhs), [rename(v1, "val")]), 
+                           rename(translate(rhs), [rename(v2, "val")])),
+            gte(att(v1), att(v2))))
+   when v1 := "val<lhs@\loc.offset>", v2 := "val<rhs@\loc.offset>";
+
+
 //AlleFormula translate((Formula)`<Expr lhs> \>= <Expr rhs>`) 
 //  = nonEmpty(select(  ,  gte( , )));
 //// We need a different treatment for the whole arithmetic expression 
