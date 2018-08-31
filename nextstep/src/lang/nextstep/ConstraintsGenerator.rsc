@@ -82,8 +82,7 @@ AlleFormula translate(f:(Formula)`exists <{QuantDecl ","}+ decls> | <Formula for
 
 // !!!!!! arithmetics!!!
 AlleFormula translate((Formula)`<Expr lhs> \>= <Expr rhs>`) =
-  universal([varDecl("nn", relvar(lhs@alleRel))], 
-              nonEmpty(select(relvar("nn"), gte(att("val"),translateConstraintExpr(rhs)))));
+   nonEmpty(select(translate(lhs), gte(att("val"),translateConstraintExpr(rhs))));
 
 AlleFormula translate((Formula)`<Expr lhs> \> <Expr rhs>`) = \false;
 AlleFormula translate((Formula)`<Expr lhs> \<= <Expr rhs>`) = \false;
