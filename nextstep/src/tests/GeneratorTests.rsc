@@ -6,6 +6,7 @@ import lang::nextstep::Extractor;
 import lang::nextstep::RelationsGenerator;
 import lang::nextstep::ConstraintsGenerator;
 import lang::nextstep::Annotator;
+import lang::nextstep::Normalizer;
 
 import translation::AST;                    // AlleAlle
 import translation::theories::integer::AST; // AlleAlle
@@ -24,6 +25,8 @@ void testGeneration() = testGeneration(|project://nextstep/input/statemachine.nx
 
 void testGeneration(loc f) {
   Spec spc = parseFile(f);
+  spc = normalize(spc);
+  
   Models models = addNewRuntime(extract(spc, resolveTypes(spc)));
  
   NX2AlleMapping rels = generateAlleRelations(models);
