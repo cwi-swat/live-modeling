@@ -272,9 +272,9 @@ private void resolveUnionCompatibleExpr(Expr orig, Expr lhs, Expr rhs, Scope scp
   col.addHeader(orig@\loc, lhsHeader);
 }
 
-void resolve(e:(Expr)`<Expr lhs> ++ <Expr rhs>`, Scope scp, Collect col) { resolveUnionCompatibleExpr(lhs,rhs,scp,col); } 
-void resolve(e:(Expr)`<Expr lhs> & <Expr rhs>`, Scope scp, Collect col) { resolveUnionCompatibleExpr(lhs,rhs,scp,col); }
-void resolve(e:(Expr)`<Expr lhs> -- <Expr rhs>`, Scope scp, Collect col) { resolveUnionCompatibleExpr(lhs,rhs,scp,col); }
+void resolve(e:(Expr)`<Expr lhs> ++ <Expr rhs>`, Scope scp, Collect col) { resolveUnionCompatibleExpr(e,lhs,rhs,scp,col); } 
+void resolve(e:(Expr)`<Expr lhs> & <Expr rhs>`, Scope scp, Collect col) { resolveUnionCompatibleExpr(e,lhs,rhs,scp,col); }
+void resolve(e:(Expr)`<Expr lhs> -- <Expr rhs>`, Scope scp, Collect col) { resolveUnionCompatibleExpr(e,lhs,rhs,scp,col); }
 //         )
 //  > transCl:      "^" Expr
 //  | reflTrans:    "*" Expr
