@@ -1,15 +1,14 @@
-// static metamodel
 static {
-  class Task (1) {
+  class Task {
      actions: Action*
      order: OrderedPair*
   }
 
-  class Subsystem (5) {
+  class Subsystem {
     ssa: Action*
   }
 
-  class Action (10) {}
+  class Action {}
 
   class OrderedPair {
     action: Action
@@ -17,9 +16,8 @@ static {
   }
 }
 
-//dynamic metamodel
 runtime {
-  class Queue (5) {
+  class Queue  {
     subsystem: Subsystem
     actions: QueuedAction*
 
@@ -34,7 +32,7 @@ runtime {
     index: int
   }
 
-  class Runtime (1) {
+  class Runtime  {
     request: Action*
     queues: Queue*
     task: Task
@@ -75,4 +73,10 @@ migration {
   (new.task.actions -- old.task.actions) in new.request.actions 
   
   //(new Task.actions -- old Task.actions) in new Runtime.request.actions
+}
+
+input {
+  old static
+  old runtime
+  new static
 }

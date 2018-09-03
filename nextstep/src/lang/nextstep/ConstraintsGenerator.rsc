@@ -84,34 +84,26 @@ AlleExpr translate(ex:(Expr)`<VarName v>`) = relvar(ex@alleRel);
 AlleExpr translate((Expr)`<Literal l>`) = translate(l);
 AlleExpr translate(ex:(Expr)`<Expr lhs>.<Expr rhs>`) 
   = project(naturalJoin(translate(lhs), translate(rhs)), [a.name| a <- ex@header]);
-//AlleExpr translate(ex:(Expr)`<Expr lhs>.<Expr rhs>`) 
-//  = project(naturalJoin(project(naturalJoin(relvar(classBoundVar), translate(lhs)), [a.name| a <- lhs@header]), 
-//            translate(rhs)), [a.name| a <- ex@header])
-//  when lhs := (Expr)`<VarName v>`;
 AlleExpr translate((Expr)`<Expr lhs> ++ <Expr rhs>`) = union(translate(lhs), translate(rhs));
 AlleExpr translate((Expr)`<Expr lhs> & <Expr rhs>`) = intersection(translate(lhs), translate(rhs));
 AlleExpr translate((Expr)`<Expr lhs> -- <Expr rhs>`) = difference(translate(lhs), translate(rhs));
 //AlleExpr translate((Expr)`^<Expr ex>`) = closure(, translate(ex));
 //AlleExpr translate((Expr)`*<Expr ex> `) = reflexClosure(, translate(ex));
-AlleExpr translate(ex:(Expr)`<Expr lhs> where <RestrictStat rhs>`) 
-  = select(translate(lhs), translateConstraint(rhs));
+
+AlleExpr translate((Expr)`<Expr expr> where (<RestrictStat restr>)`) 
+  = translate((Expr)`<Expr expr> where <RestrictStat restr>`);
+AlleExpr translate((Expr)`<Expr expr> where <RestrictExpr lhs> = <RestrictExpr rhs>`) 
+  = project( select( naturalJoin(translate(expr), 
+                                  product(rename(translate(lhs), [rename(v1, head(lhs@header))]), 
+                                          rename(translate(rhs), [rename(v2, head(rhs@header))]))),  
+                     equal(att(v1), att(v2))),           
+             [a.name| a <- expr@header])
+    when v1 := "val<lhs@\loc.offset>", v2 := "val<rhs@\loc.offset>";
 
 AlleLiteral translate((Literal)`<Int i>`) = intLit(toInt("<i>"));
-
-Criteria translateConstraint((RestrictStat)`(<RestrictStat restr>)`) = translate(restr);
-Criteria translateConstraint((RestrictStat)`<RestrictExpr lhs> = <RestrictExpr rhs>`) = equal(translate(lhs), translate(rhs));
-
-CriteriaExpr translateConstraint((RestrictExpr)`<QualifiedName att>`) = translate(att);
 CriteriaExpr translateConstraintExpr((Expr)`<Literal l>`) = litt(translate(l));
 
-// ??????????
-// qualified name is in fact our dot notation for the navigation of objects, 
-// so we should be able to produce a proper attribute from relations join
-CriteriaExpr translate((QualifiedName)`<VarName lhs> ("." <VarName rhs>)*`) = att("");
-
-
 // arithmetics
-// the following works only for rhs that is integer
 AlleFormula translate((Formula)`<Expr lhs> \>= <Literal rhs>`) =
    nonEmpty(select(translate(lhs), 
             gte(att("val"), translateConstraintExpr(rhs))));
@@ -121,18 +113,32 @@ AlleFormula translate((Formula)`<Expr lhs> \>= <Expr rhs>`) =
             gte(att(v1), att(v2))))
    when v1 := "val<lhs@\loc.offset>", v2 := "val<rhs@\loc.offset>";
 
+AlleFormula translate((Formula)`<Expr lhs> \> <Literal rhs>`) = 
+  nonEmpty(select(translate(lhs), 
+            gt(att("val"), translateConstraintExpr(rhs))));
+AlleFormula translate((Formula)`<Expr lhs> \> <Expr rhs>`) = 
+   nonEmpty(select(product(rename(translate(lhs), [rename(v1, "val")]), 
+                           rename(translate(rhs), [rename(v2, "val")])),
+            gt(att(v1), att(v2))))
+   when v1 := "val<lhs@\loc.offset>", v2 := "val<rhs@\loc.offset>";
 
-//AlleFormula translate((Formula)`<Expr lhs> \>= <Expr rhs>`) 
-//  = nonEmpty(select(  ,  gte( , )));
-//// We need a different treatment for the whole arithmetic expression 
-//// (including what possibly follows next: +, -, *, etc.)
-//AlleFormula translate((Formula)`<Expr lhs> \>= <Int rhs>`) 
-//  = nonEmpty(select(  ,  ));
-//  
-AlleFormula translate((Formula)`<Expr lhs> \> <Expr rhs>`) = \false;
-AlleFormula translate((Formula)`<Expr lhs> \<= <Expr rhs>`) = \false;
-AlleFormula translate((Formula)`<Expr lhs> \< <Expr rhs>`) = \false;
+AlleFormula translate((Formula)`<Expr lhs> \<= <Literal rhs>`) = 
+  nonEmpty(select(translate(lhs), 
+            lte(att("val"), translateConstraintExpr(rhs))));
+AlleFormula translate((Formula)`<Expr lhs> \<= <Expr rhs>`) = 
+   nonEmpty(select(product(rename(translate(lhs), [rename(v1, "val")]), 
+                           rename(translate(rhs), [rename(v2, "val")])),
+            lte(att(v1), att(v2))))
+   when v1 := "val<lhs@\loc.offset>", v2 := "val<rhs@\loc.offset>";
 
+AlleFormula translate((Formula)`<Expr lhs> \< <Literal rhs>`) = 
+  nonEmpty(select(translate(lhs), 
+            lt(att("val"), translateConstraintExpr(rhs))));
+AlleFormula translate((Formula)`<Expr lhs> \< <Expr rhs>`) = 
+   nonEmpty(select(product(rename(translate(lhs), [rename(v1, "val")]), 
+                           rename(translate(rhs), [rename(v2, "val")])),
+            lt(att(v1), att(v2))))
+   when v1 := "val<lhs@\loc.offset>", v2 := "val<rhs@\loc.offset>";
 
  //Expr
  // = count:      "count" "(" Expr ")"
