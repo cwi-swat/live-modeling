@@ -90,9 +90,7 @@ AlleExpr translate((Expr)`<Expr lhs> -- <Expr rhs>`) = difference(translate(lhs)
 //AlleExpr translate((Expr)`^<Expr ex>`) = closure(, translate(ex));
 //AlleExpr translate((Expr)`*<Expr ex> `) = reflexClosure(, translate(ex));
 
-AlleExpr translate((Expr)`<Expr expr> where (<RestrictStat restr>)`) 
-  = translate((Expr)`<Expr expr> where <RestrictStat restr>`);
-AlleExpr translate((Expr)`<Expr expr> where <RestrictExpr lhs> = <RestrictExpr rhs>`) 
+AlleExpr translate((Expr)`<Expr expr> where (<RestrictExpr lhs> = <RestrictExpr rhs>)`) 
   = project( select( naturalJoin(translate(expr), 
                                   product(rename(translate(lhs), [rename(v1, head(lhs@header))]), 
                                           rename(translate(rhs), [rename(v2, head(rhs@header))]))),  

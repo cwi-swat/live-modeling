@@ -22,6 +22,7 @@ import util::Maybe;
 
 
 void testGeneration() = testGeneration(|project://nextstep/input/statemachine.nxst|);
+void testGeneration2() = testGeneration(|project://nextstep/input/roboticarm.nxst|);
 
 void testGeneration(loc f) {
   Spec spc = parseFile(f);

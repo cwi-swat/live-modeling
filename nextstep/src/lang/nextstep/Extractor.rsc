@@ -70,11 +70,13 @@ Models extract(Spec spc, ResolvedTypes res) {
 set[NXBounds] extractBounds(set[ObjectDef] objDefs, map[str, NXRelation] rels) {
   set[NXBounds] bnds = {};
   
-  // extract bounds for unary relations from objects definitions
-  set[str] declaredRels = {"<tp>" | (ObjectDef)`<Type tp> <Atom _> <FieldInstantiation+ _>` <- objDefs};
+  // extract bounds for unary relations from objects definitions (including those without fields)
+  set[str] declaredRels = {"<tp>" | (ObjectDef)`<Type tp> <Atom _> <FieldInstantiation+ _>` <- objDefs}
+                        + {"<tp>" | (ObjectDef)`<Type tp> <{Atom ","}* _>` <- objDefs};
   
   for (str relName <- declaredRels, UnaryRelation(_) := rels[relName]) {
-    set[NXTuple] tpls = {single(strAt("<a>")) | (ObjectDef)`<Type tp> <Atom a> <FieldInstantiation+ _>` <- objDefs, "<tp>" == relName};
+    set[NXTuple] tpls = {single(strAt("<a>")) | (ObjectDef)`<Type tp> <Atom a> <FieldInstantiation+ _>` <- objDefs, "<tp>" == relName}
+                      + {single(strAt("<a>")) | (ObjectDef)`<Type tp> <{Atom ","}* objs>` <- objDefs, "<tp>" == relName, a <- objs};
     
     bnds += bounds(rels[relName], tpls);
   }
@@ -86,7 +88,8 @@ set[NXBounds] extractBounds(set[ObjectDef] objDefs, map[str, NXRelation] rels) {
   for (str relName <- declaredBins) {//, NaryRelation(_) := rels[relName]) {
     set[NXTuple] tpls = {binary(strAt("<a>"), extractAtom(b)) | 
                           (ObjectDef)`<Type tp> <Atom a> <FieldInstantiation+ flds>` <- objDefs, 
-                          fld <- flds, "<tp>_<fld.fieldName>" == relName, b <- fld.atoms};
+                          fld <- flds, (FieldInstantiation)`<VarName _> = [ ]` !:= fld, 
+                          "<tp>_<fld.fieldName>" == relName, b <- fld.atoms};
     
     bnds += bounds(rels[relName], tpls);
   }                                 

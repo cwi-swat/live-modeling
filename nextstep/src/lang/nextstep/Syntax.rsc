@@ -94,8 +94,7 @@ syntax Expr
   ;
 
 syntax RestrictStat
-  = bracket "(" RestrictStat ")"
-  | RestrictExpr "=" RestrictExpr
+  = "(" RestrictExpr "=" RestrictExpr ")"
   ;
 
 syntax RestrictExpr
@@ -118,6 +117,7 @@ syntax ObjectDef
 syntax FieldInstantiation 
   = VarName fieldName "=" {Atom ","}* atoms
   | VarName fieldName "=" {Int ","}* atoms
+  | VarName fieldName "=" "[" "]"
   ;
 
 lexical ClassName = ([A-Z] !<< [A-Z][a-zA-Z0-9_\']* !>> [a-zA-Z0-9_]) \ Keywords;
