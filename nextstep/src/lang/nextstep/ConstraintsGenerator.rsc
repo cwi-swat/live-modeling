@@ -101,7 +101,7 @@ AlleExpr translate((Expr)`<Expr expr> where <RestrictExpr lhs> = <RestrictExpr r
     when v1 := "val<lhs@\loc.offset>", v2 := "val<rhs@\loc.offset>";
 
 AlleLiteral translate((Literal)`<Int i>`) = intLit(toInt("<i>"));
-CriteriaExpr translateConstraintExpr((Expr)`<Literal l>`) = litt(translate(l));
+CriteriaExpr translateConstraintExpr(Literal l) = litt(translate(l));
 
 // arithmetics
 AlleFormula translate((Formula)`<Expr lhs> \>= <Literal rhs>`) =
