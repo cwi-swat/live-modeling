@@ -182,12 +182,6 @@ AlleFormula distanceDeclaration(intType(), RelationDef d, RelationDef xo, Relati
       AlleFormula f2 := nonEmpty(select(naturalJoin(relvar("d"), relvar(d.name)), 
                           equal(att("delta"), att("val"))));
 
-// constraints for distance in terms of these:
-  //<NaryRelation(relName, dom, ran, false), _, oldRuntime()>
-  //<NaryRelation(relName, dom, ran, false), _, newRuntime()>
-
-
-// NX2AlleMapping = rel[NXRelation nx, RelationDef alle, Model model];
 Maybe[ObjectiveSection] generateAlleObjectives(NX2AlleMapping rels) {
   list[Objective] criteria = 
     [minimize(generateMetric(nxDom, alleRel)) | <NaryRelation(_, _, nxDom, _), alleRel, distance()> <- rels];//, nxRel := NaryRelation(str _, Class _, RangeType _, bool _)];  
@@ -200,8 +194,6 @@ AlleExpr generateMetric(class(Class _), RelationDef alleRel)
   
 AlleExpr generateMetric(intType(), RelationDef alleRel)
   = aggregate(relvar(alleRel.name), [aggFuncDef(sum("delta"), "s")]);  
-
-// MIGRATION RULES
 
 
   
