@@ -181,6 +181,7 @@ default void resolve(Formula f, Scope scp, Collect col) { throw "Unable to resol
 
 private str findType((Expr)`<Expr _>.<Expr rhs>`, Collect col) = findType(rhs,col);
 private str findType(ex:(Expr)`<VarName v>`, Collect col) = col.getType(ex@\loc);
+private default str findType(Expr expr, Collect col) { throw "Unable to resolve the type for expression <expr>"; }
 
 private Scope resolveQuantDecl((QuantDecl)`<VarName v>: <Expr expr>`, Scope scp, Collect col) {
   resolve(expr, scp, col);
@@ -259,7 +260,10 @@ void resolve(e:(Expr)`<Expr lhs>.<Expr rhs>`, Scope scp, Collect col) {
   col.addHeader(e@\loc, joinedHeader); 
 }
 
-//  > restrict:     Expr "where" RestrictStat
+void resolve(e:(Expr)`<Expr expr> where <RestrictStat restr>`, Scope scp, Collect col) {
+  resolve(expr,scp,col);
+  
+}
 
 private void resolveUnionCompatibleExpr(Expr orig, Expr lhs, Expr rhs, Scope scp, Collect col) {
   resolve(lhs,scp,col);
