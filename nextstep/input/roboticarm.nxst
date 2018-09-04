@@ -60,9 +60,8 @@ runtime {
       forall o: task.order |
         (exists q: Queue | o.succeeds in q.actions.item && o.action in q.actions.item)
           =>
-        (forall qa1: (queues.actions where (queues.actions.item = o.succeeds)), 
-                qa2: (queues.actions where (queues.actions.item = o.action)) |
-            qa1.index > qa2.index)                    
+        (forall qa1: queues.actions, qa2: queues.actions | 
+                (qa1.item = o.succeeds) && (qa2.item = o.action) => qa1.index > qa2.index)                    
     } 
   }
 }
