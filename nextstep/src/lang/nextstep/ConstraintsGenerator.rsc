@@ -26,7 +26,12 @@ import util::Maybe;
 list[AlleFormula] generateAlleConstraints(Spec spec, NX2AlleMapping relations) 
   = [singletonMultiplicityConstraint(relName, dom, "xn") | <NaryRelation(relName, dom, ran, false), _, newRuntime()> <- relations]
   + [singletonMultiplicityConstraint(relName, dom, "d") | <NaryRelation(relName, dom, ran, false), _, distance()> <- relations]
-  + [typeConstraint(relName, dom, ran, "xn", relations) | <NaryRelation(relName, dom, ran, _), _, newRuntime()> <- relations];
+  + [typeConstraint(relName, dom, ran, "xn", relations) | <NaryRelation(relName, dom, ran, _), _, newRuntime()> <- relations]
+  + [distanceDeclaration(nxDom, d, xo, xn) | 
+      <NaryRelation(relName, _, nxDom, _), d, distance()> <- relations,
+      <NaryRelation(relName, _, nxDom, _), xo, oldRuntime()> <- relations,
+      <NaryRelation(relName, _, nxDom, _), xn, newRuntime()> <- relations]
+  ;
 
 // Get an AlleAlle relation that corresponds to the Nextep class
 RelationDef lookupAlleRelation(Class class, list[Model] models, NX2AlleMapping relations) {
@@ -152,7 +157,30 @@ AlleFormula translate((Formula)`<Expr lhs> \< <Expr rhs>`) =
  //        )
  // ;
 
+
 // DISTANCE
+
+AlleFormula distanceDeclaration(class(Class _), RelationDef d, RelationDef xo, RelationDef xn)
+  = equal(relvar(d.name), 
+           union(difference(relvar(xo.name), relvar(xn.name)), 
+                 difference(relvar(xn.name), relvar(xo.name))));
+
+AlleFormula distanceDeclaration(intType(), RelationDef d, RelationDef xo, RelationDef xn)
+  = conjunction(equal(project(relvar(d.name), attr), 
+                      project(relvar(xn.name), attr)), 
+      universal([varDecl("d", relvar(xn.name))], 
+           conjunction( 
+            implication(dinxo, f1),
+            implication(negation(dinxo), f2)
+                      )           
+                ))
+    when 
+      list[str] attr := [a.name | a <- d.heading, a.name != "delta"],
+      AlleFormula dinxo := subset(project(relvar("d"), attr), project(relvar(xo.name), attr)),
+      AlleFormula f1 := nonEmpty(select(naturalJoin(naturalJoin(relvar("d"), relvar(d.name)), rename(relvar(xo.name), [rename("xo_val", "val")])), 
+                          equal(att("delta"), abs(subtraction(att("val"), att("xo_val")))))),
+      AlleFormula f2 := nonEmpty(select(naturalJoin(relvar("d"), relvar(d.name)), 
+                          equal(att("delta"), att("val"))));
 
 // constraints for distance in terms of these:
   //<NaryRelation(relName, dom, ran, false), _, oldRuntime()>
