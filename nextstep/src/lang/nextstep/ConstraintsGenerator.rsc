@@ -62,7 +62,7 @@ AlleFormula typeConstraint(str relName, Class dom, ran: intType(), str prefix, N
   
 // SEMANTIC RELATIONS
 
-list[AlleFormula] translate(Spec spc) = translate(spc.\dynamic); // + translate(spc.migration);
+list[AlleFormula] translate(Spec spc) = translate(spc.\dynamic) + translate(spc.migration);
 list[AlleFormula] translate((DynamicDef)`runtime { <Class* cs> }`) = [*translate(c) | Class c <- cs];
 list[AlleFormula] translate((MigrationDef)`migration { <Formula* rules>}`) =  [translate(f) | Formula f <- rules];
 list[AlleFormula] translate(c:(Class)`class <ClassName _> { <ClassBody body>}`) = translate(body);  
@@ -94,6 +94,10 @@ AlleExpr translate(ex:(Expr)`<VarName v>`) = relvar(ex@alleRel);
 AlleExpr translate((Expr)`<Literal l>`) = translate(l);
 AlleExpr translate(ex:(Expr)`<Expr lhs>.<Expr rhs>`) 
   = project(naturalJoin(translate(lhs), translate(rhs)), [a.name| a <- ex@header]);
+
+AlleExpr translate(ex:(Expr)`old[<Expr rhs>]`) = translate(rhs);
+AlleExpr translate(ex:(Expr)`new[<Expr rhs>]`) = translate(rhs);
+
 AlleExpr translate((Expr)`<Expr lhs> ++ <Expr rhs>`) = union(translate(lhs), translate(rhs));
 AlleExpr translate((Expr)`<Expr lhs> & <Expr rhs>`) = intersection(translate(lhs), translate(rhs));
 AlleExpr translate((Expr)`<Expr lhs> -- <Expr rhs>`) = difference(translate(lhs), translate(rhs));

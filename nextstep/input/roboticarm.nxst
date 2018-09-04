@@ -69,7 +69,7 @@ runtime {
 migration {
   // If we add new actions to the task, put them into request
   //(forall old, new : Runtime |)
-  (new.task.actions -- old.task.actions) in new.request.actions 
+  new[Runtime.task.actions] -- old[Runtime.task.actions] in new[Runtime.request] 
   
   //(new Task.actions -- old Task.actions) in new Runtime.request.actions
 }

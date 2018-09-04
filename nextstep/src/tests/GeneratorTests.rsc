@@ -28,7 +28,8 @@ void testGeneration3() = testGeneration(|project://nextstep/output/normalized.nx
 
 void testGeneration(loc f) {
   Spec spc = parseFile(f);
-  spc = parseString("<normalize(spc)>");
+  normalize(spc);
+  spc = parseFile(|project://nextstep/output/normalized.nxst|); //"<normalize(spc)>");
   
   Models models = addNewRuntime(extract(spc, resolveTypes(spc)));
  

@@ -18,17 +18,27 @@ anno list[HeaderAttribute] Expr@header;
 
 alias AlleRel = tuple[str name, list[HeaderAttribute] header];
 
-alias Env = map[tuple[str nxtstRel, Model m], AlleRel];
+alias Env = map[tuple[str nxtstRel, Step stp, Part prt], AlleRel];
 
-alias Collect = tuple[void (loc,AlleRel) addAlleRel, AlleRel (loc) getAlleRel, void (loc,list[HeaderAttribute]) addHeader, list[HeaderAttribute] (loc) getHeader, void (str,AlleRel) addToEnv, void (loc,str) addType, str (loc) getType, AlleRel (str) lookupClass, AlleRel (str,Cls) lookupField, Cls (str) lookupCls, Cls (Cls,str) lookupFieldCls];
+alias Collect = tuple[void (loc,AlleRel) addAlleRel, AlleRel (loc) getAlleRel, void (loc,list[HeaderAttribute]) addHeader, list[HeaderAttribute] (loc) getHeader, void (str,Step,AlleRel) addToEnv, void (loc,str) addType, str (loc) getType, AlleRel (str,Step) lookupClass, AlleRel (str,Cls,Step) lookupField, Cls (str) lookupCls, Cls (Cls,str) lookupFieldCls];
 
 alias ResolvedAlleRels = map[loc,AlleRel];
 alias ResolvedFieldTypes = map[loc,str];
 alias ResolvedHeaders = map[loc,list[HeaderAttribute]];
+
+data Part
+  = static()
+  | runtime()
+  ;
+
+data Step
+  = new()
+  | old()
+  ;
  
 data Scope 
-  = top()
-  | scope(Cls cls, Scope parent)
+  = top(Step stp)
+  | scope(Step stp,Cls cls, Scope parent)
   ; 
 
 data Cls = class(str name, list[Field] fields);
@@ -48,33 +58,34 @@ Spec annotate(Spec spc, NX2AlleMapping mapping) {
   void addHeader(loc l, list[HeaderAttribute] header) {
     resolvedHeaders[l] = header;
   }
-  list[HeaderAttribute] getHeader(loc l) = resolvedHeaders[l];
+  list[HeaderAttribute] getHeader(loc l) = resolvedHeaders[l] when l in resolvedHeaders;
+  default list[HeaderAttribute] getHeader(loc l) = [];
     
   Env env = buildEnv(mapping);
-  void addToEnv(str name, AlleRel r) {
-    env[<name,newRuntime()>] = r;
+  void addToEnv(str name, Step stp, AlleRel r) {
+    env[<name,stp,runtime()>] = r;
   }
   
-  AlleRel lookupClassRel(str class) {
-    if (<class,newRuntime()> in env) {
-      return env[<class,newRuntime()>];
-    } else if (<class,newStatic()> in env) {
-      return env[<class,newStatic()>];
+  AlleRel lookupClassRel(str class, Step stp) {
+    if (<class,stp,runtime()> in env) {
+      return env[<class,stp,runtime()>];
+    } else if (<class,stp,static()> in env) {
+      return env[<class,stp,static()>];
     } else {
-      throw "Unable to find relation for class <class> in new runtime or new static"; 
+      throw "Unable to find relation for class <class> in <stp> runtime or new static"; 
     }
   }
 
-  AlleRel lookupFieldRel(str fieldName, Cls cls) {
+  AlleRel lookupFieldRel(str fieldName, Cls cls, Step stp) {
     if (Field fld <- cls.fields, fld.name == fieldName) {
       str fieldRel = "<cls.name>_<fieldName>";
       
-      if (<fieldRel,newRuntime()> in env) {
-        return env[<fieldRel,newRuntime()>];
-      } else if (<fieldRel,newStatic()> in env) {
-        return env[<fieldRel,newStatic()>];
+      if (<fieldRel,stp,runtime()> in env) {
+        return env[<fieldRel,stp,runtime()>];
+      } else if (<fieldRel,stp,static()> in env) {
+        return env[<fieldRel,stp,static()>];
       } else {
-        throw "Unable to find relation for field <fieldRel> in new runtime or new static";
+        throw "Unable to find relation for field <fieldRel> in <stp> runtime or new static";
       }
     } else {
       throw "Unable to find field <fieldName> for class <cls> in specification";
@@ -83,7 +94,7 @@ Spec annotate(Spec spc, NX2AlleMapping mapping) {
   
   map[loc,str] types = ();
   void addType(loc l, str class) { types[l] = class; }
-  str getType(loc l) = types[l];
+  str getType(loc l) = types[l] when l in types;
   default str getType(loc l) { throw "Cannot find type for loc <l>"; }
    
   map[str,Cls] classes = constructClasses(spc);
@@ -94,9 +105,9 @@ Spec annotate(Spec spc, NX2AlleMapping mapping) {
   Cls lookupFieldCls(Cls cls, str field) = cls when /intField(field) <- cls.fields;    
   default Cls lookupFieldCls(Cls cls, str field) { throw "Cannot find field <field> in class <cls.name>"; }  
     
-  resolve(spc, top(), <addAlleRel,getAlleRel,addHeader,getHeader,addToEnv,addType,getType,lookupClassRel,lookupFieldRel,lookupCls,lookupFieldCls>);
+  resolve(spc, top(new()), <addAlleRel,getAlleRel,addHeader,getHeader,addToEnv,addType,getType,lookupClassRel,lookupFieldRel,lookupCls,lookupFieldCls>);
   
-  iprintln(resolvedHeaders);
+  //iprintln(resolvedHeaders);
   
   return annotate(spc, resolvedRels, resolvedHeaders);
 }
@@ -106,6 +117,10 @@ Spec annotate(Spec spc, ResolvedAlleRels rels, ResolvedHeaders headers) {
     case Class cls => cls[@alleRel = rels[cls@\loc].name] 
     case Expr expr => expr[@header = headers[expr@\loc]][@alleRel = rels[expr@\loc].name] when (Expr)`<VarName _>` := expr
     case Expr expr => expr[@header = headers[expr@\loc]] when (Expr)`<VarName _>` !:= expr 
+  }
+  spc.migration =visit(spc.migration) {
+    case Expr expr => expr[@header = headers[expr@\loc]][@alleRel = rels[expr@\loc].name] when (Expr)`<VarName _>` := expr
+    case Expr expr => expr[@header = headers[expr@\loc]] when (Expr)`<VarName _>` !:= expr
   }
   
   return spc;
@@ -121,13 +136,18 @@ private map[str,Cls] constructClasses(Spec spc) {
 }
 
 private Env buildEnv(NX2AlleMapping mp) 
-  = (<"<cls.name>", md> : <r.name, r.heading> | <UnaryRelation(Class cls), RelationDef r, Model md> <- mp)
-  + (<relation, md> : <r.name, r.heading> | <NaryRelation(str relation, Class domain, RangeType range, bool isSet), RelationDef r, Model md> <- mp)
+  = (<"<cls.name>", stp, pt> : <r.name, r.heading> | <UnaryRelation(Class cls), RelationDef r, Model md> <- mp, md != distance(), <Step stp, Part pt> := modelToStepAndPart(md))
+  + (<relation, stp, pt> : <r.name, r.heading> | <NaryRelation(str relation, Class domain, RangeType range, bool isSet), RelationDef r, Model md> <- mp, md != distance(), <Step stp, Part pt> := modelToStepAndPart(md))
   ;
+
+private tuple[Step stp, Part prt] modelToStepAndPart(newRuntime()) = <new(),runtime()>;
+private tuple[Step stp, Part prt] modelToStepAndPart(newStatic()) = <new(),static()>;
+private tuple[Step stp, Part prt] modelToStepAndPart(oldRuntime()) = <old(),runtime()>;
+private tuple[Step stp, Part prt] modelToStepAndPart(oldStatic()) = <old(),static()>;
 
 void resolve(Spec spc, Scope scp, Collect col) {
   resolve(spc.\dynamic, scp, col);
-  //resolve(spc.migration, env, col);
+  resolve(spc.migration, scp, col);
 }
   
 void resolve((DynamicDef)`runtime { <Class* cs> }`, Scope scp, Collect col) {
@@ -136,16 +156,16 @@ void resolve((DynamicDef)`runtime { <Class* cs> }`, Scope scp, Collect col) {
   }
 }
   
-//void resolve((MigrationDef)`migration { <Formula* rules>}`, Env env, Collect col) { 
-//  for (Formula f <- rules) {
-//    annotate(f, modOnly(newRuntime()));
-//  }
-//}
+void resolve((MigrationDef)`migration { <Formula* rules>}`, Scope scp, Collect col) { 
+  for (Formula f <- rules) {
+    resolve(f, scope(new(), col.lookupCls("Runtime"),scp), col);
+  }
+}
 
 void resolve(c:(Class)`class <ClassName name> { <ClassBody body>}`, Scope scp, Collect col) {
-  col.addAlleRel(c@\loc, col.lookupClass("<name>"));  
+  col.addAlleRel(c@\loc, col.lookupClass("<name>", scp.stp));  
   
-  resolve(body, scope(col.lookupCls("<name>"), scp), col);
+  resolve(body, scope(scp.stp,col.lookupCls("<name>"), scp), col);
 }
   
 void resolve((ClassBody)`<FieldDecl* fields> <Invariant* inv>`, Scope scp, Collect col) {
@@ -189,7 +209,7 @@ private Scope resolveQuantDecl((QuantDecl)`<VarName v>: <Expr expr>`, Scope scp,
   str tipe = findType(expr,col);
   scp.cls.fields += [field("<v>",tipe)];
 
-  col.addToEnv("<scp.cls.name>_<v>",<"<v>",col.getHeader(expr@\loc)>);
+  col.addToEnv("<scp.cls.name>_<v>",scp.stp,<"<v>",col.getHeader(expr@\loc)>);
         
   return scp;
 }
@@ -220,20 +240,22 @@ void resolve(e:(Expr)`( <Expr expr> )`, Scope scp, Collect col) {
   col.addHeader(e@\loc, col.getHeader(expr@\loc)); 
 }
 
-void resolve(e:(Expr)`<VarName v>`, Scope scp, Collect col) {
-  AlleRel r;
-  try {
-    // Probably a referenced field
-    r = col.lookupField("<v>",scp.cls);
-    col.addType(e@\loc,col.lookupFieldCls(scp.cls,"<v>").name);
-  } catch: {
-    // could also be a class ...
-    r = col.lookupClass("<v>");
-    col.addType(e@\loc,"<v>");
-  }  
-  
-  col.addAlleRel(e@\loc,r);
-  col.addHeader(e@\loc,r.header);
+void resolve(e:(Expr)`<VarName v>`, Scope scp, Collect col) {  
+  if (col.getHeader(e@\loc) == []) {
+    AlleRel r;
+    try {
+      // Probably a referenced field
+      r = col.lookupField("<v>",scp.cls,scp.stp);
+      col.addType(e@\loc,col.lookupFieldCls(scp.cls,"<v>").name);
+    } catch: {
+      // could also be a class ...
+      r = col.lookupClass("<v>",scp.stp);
+      col.addType(e@\loc,"<v>");
+    }  
+    
+    col.addAlleRel(e@\loc,r);
+    col.addHeader(e@\loc,r.header);
+  }
 } 
 
 void resolve(e:(Expr)`<Literal l>`, Scope scp, Collect col) {
@@ -242,15 +264,9 @@ void resolve(e:(Expr)`<Literal l>`, Scope scp, Collect col) {
 
 void resolve(e:(Expr)`<Expr lhs>.<Expr rhs>`, Scope scp, Collect col) {
   resolve(lhs,scp,col);
-  
-  Cls lhsCls;
-  if ((Expr)`<VarName v>` := lhs) {
-    lhsCls = col.lookupFieldCls(scp.cls,"<v>");
-  } else {
-    lhsCls = col.lookupCls(findType(lhs,col));
-  }
-  
-  resolve(rhs,scope(lhsCls,scp),col);
+
+  Cls lhsCls = col.lookupCls(findType(lhs,col));
+  resolve(rhs,scope(scp.stp,lhsCls,scp),col);
   
   list[HeaderAttribute] lHeader = col.getHeader(lhs@\loc);
   list[HeaderAttribute] rHeader = col.getHeader(rhs@\loc);
@@ -287,8 +303,19 @@ void resolve(e:(Expr)`<Expr lhs> -- <Expr rhs>`, Scope scp, Collect col) { resol
 //         )
 //  > transCl:      "^" Expr
 //  | reflTrans:    "*" Expr
-//  > old: "old" //Expr
-//  | new: "new" //Expr 
+void resolve(e:(Expr)`old[<Expr expr>]`, Scope scp, Collect col) {
+  Scope newScp = scope(old(),scp.cls,scp.parent);
+  resolve(expr, newScp, col); 
+  
+  col.addHeader(e@\loc, col.getHeader(expr@\loc));  
+}
+
+void resolve(e:(Expr)`new[<Expr expr>]`, Scope scp, Collect col) {
+  Scope newScp = scope(new(),scp.cls,scp.parent);
+  resolve(expr, newScp, col); 
+  
+  col.addHeader(e@\loc, col.getHeader(expr@\loc));
+}
 //  ;
 //
 //

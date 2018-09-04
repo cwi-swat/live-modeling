@@ -75,8 +75,8 @@ syntax Expr
          )
   > transCl:      "^" Expr
   | reflTrans:    "*" Expr
-  > old: "old" //Expr
-  | new: "new" //Expr 
+  > old: "old" "[" Expr expr "]"
+  | new: "new" "[" Expr expr "]" 
   ;
 
 
