@@ -8,12 +8,17 @@ module lang::nextstep::Normalizer
 
 import lang::nextstep::Syntax;
 import ParseTree;
+import IO;
 
 Spec normalize(Spec spec) {
-  return visit (spec) {
+  spec = visit (spec) {
     case c:(Class)`class <ClassName _> { <ClassBody _> }` => c_norm
       when c_norm := normalize(c)
   };
+  
+  writeFile(|project://nextstep/output/normalized.nxst|, spec);
+  
+  return spec;
 }
 
 Class normalize(Class c) {

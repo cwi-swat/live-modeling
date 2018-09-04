@@ -23,10 +23,12 @@ import util::Maybe;
 
 void testGeneration() = testGeneration(|project://nextstep/input/statemachine.nxst|);
 void testGeneration2() = testGeneration(|project://nextstep/input/roboticarm.nxst|);
+void testGeneration3() = testGeneration(|project://nextstep/output/normalized.nxst|);
+
 
 void testGeneration(loc f) {
   Spec spc = parseFile(f);
-  spc = normalize(spc);
+  spc = parseString("<normalize(spc)>");
   
   Models models = addNewRuntime(extract(spc, resolveTypes(spc)));
  
