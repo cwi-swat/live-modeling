@@ -18,6 +18,7 @@ import IO;
 import List;
 import String;
 import ParseTree;
+import util::Maybe;
 
 //anno str Expr@alleRel;
 //anno str Class@alleRel;
@@ -153,6 +154,24 @@ AlleFormula translate((Formula)`<Expr lhs> \< <Expr rhs>`) =
 
 // DISTANCE
 
+// constraints for distance in terms of these:
+  //<NaryRelation(relName, dom, ran, false), _, oldRuntime()>
+  //<NaryRelation(relName, dom, ran, false), _, newRuntime()>
+
+
+// NX2AlleMapping = rel[NXRelation nx, RelationDef alle, Model model];
+Maybe[ObjectiveSection] generateAlleObjectives(NX2AlleMapping rels) {
+  list[Objective] criteria = 
+    [minimize(generateMetric(nxDom, alleRel)) | <NaryRelation(_, _, nxDom, _), alleRel, distance()> <- rels];//, nxRel := NaryRelation(str _, Class _, RangeType _, bool _)];  
+  
+  return just(objectives(independent(), criteria));  // which priority is default in Alle?
+}
+
+AlleExpr generateMetric(class(Class _), RelationDef alleRel)
+  = aggregate(relvar(alleRel.name), [aggFuncDef(count(), "c")]);
+  
+AlleExpr generateMetric(intType(), RelationDef alleRel)
+  = aggregate(relvar(alleRel.name), [aggFuncDef(sum("delta"), "s")]);  
 
 // MIGRATION RULES
 

@@ -36,8 +36,9 @@ void testGeneration(loc f) {
   Spec annotatedSpc = annotate(spc,rels);
   
   list[AlleFormula] forms = generateAlleConstraints(annotatedSpc, rels) + translate(annotatedSpc);
+  Maybe[ObjectiveSection] objectives = generateAlleObjectives(rels);
   
-  str alleSpec = unparse(problem(toList(rels.alle), forms, nothing(), nothing()));
+  str alleSpec = unparse(problem(toList(rels.alle), forms, objectives, nothing()));
   
   writeFile(|project://nextstep/output/<f[extension = "alle"].file>|, alleSpec);
 }
