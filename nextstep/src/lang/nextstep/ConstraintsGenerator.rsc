@@ -72,7 +72,7 @@ list[AlleFormula] translate((Invariant)`invariants { <Formula+ forms> }`) = [tra
  
 AlleFormula translate((Formula)`( <Formula form> )`) = translate(form);
 AlleFormula translate((Formula)`not <Formula form>`) = negation(translate(form));
-AlleFormula translate((Formula)`some <Expr expr>`) = nonempty(translate(expr));
+AlleFormula translate((Formula)`some <Expr expr>`) = nonEmpty(translate(expr));
 AlleFormula translate((Formula)`no <Expr expr>`) = empty(translate(expr));
 AlleFormula translate((Formula)`one <Expr expr>`) = exactlyOne(translate(expr));
 AlleFormula translate((Formula)`<Expr lhs> in <Expr rhs>`) = subset(translate(lhs), translate(rhs)); 
