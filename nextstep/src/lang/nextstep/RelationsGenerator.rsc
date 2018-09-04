@@ -25,7 +25,8 @@ NX2AlleMapping generateAlleRelations (Models models)
   = {<r, genFixedBoundsRel(r, t, "po"), oldStatic()> | bounds(r, t) <- models[oldStatic()]}
   + {<r, genFixedBoundsRel(r, t, "pn"), newStatic()> | bounds(r, t) <- models[newStatic()]}
   + {<r, genFixedBoundsRel(r, t, "xo"), oldRuntime()> | bounds(r, t) <- models[oldRuntime()]}
-  + {<r, genUpperBoundsRel(r, t, "xn"), newRuntime()> | bounds(r, t) <- models[newRuntime()]}
+  + {<r, genUpperBoundsRel(r, t, "xn"), newRuntime()> | bounds(r, t) <- models[newRuntime()], !(UnaryRelation(Class c) := r && "<c.name>" == "Runtime")}
+  + {<r, genFixedBoundsRel(r, t, "xn"), newRuntime()> | bounds(r, t) <- models[newRuntime()], (UnaryRelation(Class c) := r && "<c.name>" == "Runtime")}
   + {<r, genDistanceRel(r, t, "d"), distance()> | bounds(r, t) <- models[distance()]};
 
 // Unary relation
