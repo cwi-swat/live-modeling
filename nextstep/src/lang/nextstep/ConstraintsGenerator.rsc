@@ -31,6 +31,10 @@ list[AlleFormula] generateAlleConstraints(Spec spec, NX2AlleMapping relations)
       <NaryRelation(relName, _, nxDom, _), d, distance()> <- relations,
       <NaryRelation(relName, _, nxDom, _), xo, oldRuntime()> <- relations,
       <NaryRelation(relName, _, nxDom, _), xn, newRuntime()> <- relations]
+  + [distanceDeclaration(class(nxDom), d, xo, xn) | 
+      <UnaryRelation(nxDom), d, distance()> <- relations,
+      <UnaryRelation(nxDom), xo, oldRuntime()> <- relations,
+      <UnaryRelation(nxDom), xn, newRuntime()> <- relations]
   ;
 
 // Get an AlleAlle relation that corresponds to the Nextep class
@@ -184,9 +188,10 @@ AlleFormula distanceDeclaration(intType(), RelationDef d, RelationDef xo, Relati
 
 Maybe[ObjectiveSection] generateAlleObjectives(NX2AlleMapping rels) {
   list[Objective] criteria = 
-    [minimize(generateMetric(nxDom, alleRel)) | <NaryRelation(_, _, nxDom, _), alleRel, distance()> <- rels];//, nxRel := NaryRelation(str _, Class _, RangeType _, bool _)];  
+    [minimize(generateMetric(nxDom, alleRel)) | <NaryRelation(_, _, nxDom, _), alleRel, distance()> <- rels]
+  + [minimize(generateMetric(class(nxDom), alleRel)) | <UnaryRelation(nxDom), alleRel, distance()> <- rels];  
   
-  return just(objectives(independent(), criteria));  // which priority is default in Alle?
+  return just(objectives(pareto(), criteria));  // which priority is default in Alle?
 }
 
 AlleExpr generateMetric(class(Class _), RelationDef alleRel)
