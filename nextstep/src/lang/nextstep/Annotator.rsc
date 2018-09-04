@@ -164,6 +164,7 @@ void resolve((Invariant)`invariants { <Formula+ forms> }`, Scope scp, Collect co
   }
 }
 
+void resolve((Formula)`(<Formula form>)`, Scope scp, Collect col) { resolve(form,scp,col); }
 void resolve((Formula)`not <Formula form>`, Scope scp, Collect col) { resolve(form,scp,col); }
 void resolve((Formula)`some <Expr expr>`, Scope scp, Collect col) { resolve(expr,scp,col); }
 void resolve((Formula)`no <Expr expr>`, Scope scp, Collect col) { resolve(expr,scp,col); }
@@ -175,6 +176,8 @@ void resolve((Formula)`<Formula lhs> =\> <Formula rhs>`, Scope scp, Collect col)
 void resolve((Formula)`<Formula lhs> \<=\> <Formula rhs>`, Scope scp, Collect col) { resolve(lhs,scp,col); resolve(rhs,scp,col);} 
 void resolve((Formula)`<Formula lhs> && <Formula rhs>`, Scope scp, Collect col) { resolve(lhs,scp,col); resolve(rhs,scp,col);}
 void resolve((Formula)`<Formula lhs> || <Formula rhs>`, Scope scp, Collect col) { resolve(lhs,scp,col); resolve(rhs,scp,col);}
+
+default void resolve(Formula f, Scope scp, Collect col) { throw "Unable to resolve formula <f>"; }
 
 private str findType((Expr)`<Expr _>.<Expr rhs>`, Collect col) = findType(rhs,col);
 private str findType(ex:(Expr)`<VarName v>`, Collect col) = col.getType(ex@\loc);
@@ -266,6 +269,8 @@ private void resolveUnionCompatibleExpr(Expr orig, Expr lhs, Expr rhs, Scope scp
   list[HeaderAttribute] rhsHeader = col.getHeader(rhs@\loc);
     
   if (lhsHeader != rhsHeader) {
+    println("Orig expr: <orig>");
+    println("LHS header: <lhsHeader>, RHS header: <rhsHeader>");
     throw ("Intersection only works on compatible classes");
   }
   
@@ -295,7 +300,8 @@ void resolve(e:(Expr)`<Expr lhs> -- <Expr rhs>`, Scope scp, Collect col) { resol
 //         | sub: Expr "-" Expr
 //         )
 //  ;
-//
+
+default void resolve(Expr expr, Scope scp, Collect col) { throw "Unable to resolve expression <expr>"; }
 //syntax RestrictStat
 //  = bracket "(" RestrictStat ")"
 //  | RestrictExpr "=" RestrictExpr
