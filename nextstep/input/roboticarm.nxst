@@ -42,7 +42,7 @@ runtime {
       request in task.actions 
     
       // Each queued action of the task is removed from the request
-      forall q: queues | no (q.actions & request.actions)
+      forall q: queues | no (q.actions.item & request)
 
       // An action cannot be queued if it succeeds an action that hasn't been queued yet (= that is still in the request)
       forall o: task.order | 
