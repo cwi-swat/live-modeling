@@ -17,7 +17,7 @@ void testNormalization(loc f) {
   
   spc = normalize(spc);
   
-  writeFile(|project://nextstep/output/normalized.nxst|, spc);
+  writeFile(|project://nextstep/output/<spc@\loc[extension = "norm"].file>.nxst|, spc);
   
  // Models models = addNewRuntime(extract(spc, resolveTypes(spc)));
  

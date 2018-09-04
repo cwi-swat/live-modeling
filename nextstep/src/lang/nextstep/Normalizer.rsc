@@ -10,15 +10,18 @@ import lang::nextstep::Syntax;
 import ParseTree;
 import IO;
 
-Spec normalize(Spec spec) {
+loc normalize(Spec spec) {
   spec = visit (spec) {
     case c:(Class)`class <ClassName _> { <ClassBody _> }` => c_norm
       when c_norm := normalize(c)
   };
   
-  writeFile(|project://nextstep/output/normalized.nxst|, spec);
+  println(<spec@\loc[extension="norm"].file>);
+  loc normalizedFile = |project://nextstep/output/<spec@\loc[extension="norm"].file>.nxst|;
   
-  return spec;
+  writeFile(normalizedFile, spec);
+  
+  return normalizedFile;
 }
 
 Class normalize(Class c) {

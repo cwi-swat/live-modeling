@@ -14,19 +14,25 @@ import translation::theories::integer::Unparser;
 import ide::vis::integrationtests::VisualizerTester;
 
 import Parser;
+import Checker;
+
 import Map;
 import IO;
 import Set;
 import util::Maybe;
+import ParseTree;
 
-
-void runNextepSMT() = runNextep(|project://nextstep/input/statemachine.nxst|);
+void runNextepSM() = runNextep(|project://nextstep/input/statemachine.nxst|);
 void runNextepRoboticArm() = runNextep(|project://nextstep/input/roboticarm.nxst|);
 
 void runNextep(loc f) {
   // parse and normalize
   Spec spc = parseFile(f);
-  spc = parseString("<normalize(spc)>");
+  runNextep(spc);
+}
+
+void runNextep(Spec spc) {
+  spc = parseFile(normalize(spc));
   
   // extract (instance) models
   Models models = addNewRuntime(extract(spc, resolveTypes(spc)));
@@ -42,11 +48,11 @@ void runNextep(loc f) {
   Maybe[ObjectiveSection] objectives = generateAlleObjectives(rels);
   
   // write AlleAlle file
-  str alleSpec = unparse(problem(toList(rels.alle), forms, objectives, nothing()));  
-  writeFile(|project://nextstep/output/<f[extension = "alle"].file>|, alleSpec);
+  Problem alleProblem = problem(toList(rels.alle), forms, objectives, nothing());
+  writeFile(|project://nextstep/output/<spc@\loc[extension = "alle"].file>|, unparse(alleProblem));
   
-  // Run AlleAlle solver: there should be a smarter way using the AST directly(!!)
-  translateAndVis(|project://nextstep/output/<f[extension = "alle"].file>|);
+  // Run AlleAlle solver and visualize result
+  check(alleProblem);
 }
 
 
