@@ -23,7 +23,7 @@ runtime {
 
     invariants {
       // Each queue corresponds to a subsystem (and contains actions only of this subsystem)
-      forall qa: actions | qa.item in subsystem.ssa 
+      forall qa: actions | qa.item in subsystem.ssa       
     }
   }
 
@@ -111,8 +111,8 @@ input {
       index = 2
   new static
     Task t
-      actions = up, down, grab
-      order = op1, op2
+      actions = up, down, grab, switch
+      order = op1, op2, op3
     Subsystem arm
       ssa = up, down
     Subsystem hand
