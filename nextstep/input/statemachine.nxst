@@ -25,7 +25,6 @@ runtime {
     machine: Machine
     current: State
     visited: Visit*
-    //trace: Step*
     
     invariants {
       // the current state must be part of the states connected to the machine
@@ -33,21 +32,6 @@ runtime {
 
       forall s:machine.states | one (visited.state & s)
       forall v1:visited, v2:visited | v1 != v2 => v1.state != v2.state
-      // visited is defined for all states of the machine
-      //forall s: machine.states |  (visited.states.s) 
-      //(exists v: visited | v.state = s) && count(visited where (visited.state = s)) = 1
-
-      // both the trace from and to targets must be part of the states of the machine
-      //trace.from ++ trace.to in machine.states
-      //
-      //// all to targets in the trace must be reachable from the initial state of the machine
-      //trace.to in ^machine.initial.transitions.target
-      //
-      //// if there is a trace, the current state must be part of it
-      //some trace => exists s: trace | s.to = current
-      
-      // the nr of times that a state was visited depends of the nr of occurences in the trace
-      //forall v: visited | v.nr = count(trace where (trace.from = v.state))
     }
   } 
   
@@ -58,20 +42,10 @@ runtime {
     // Nr must be positive
     invariant: nr >= 0
   }
-  
-  //class Step {
-  //  from: State
-  //  to: State
-  //  
-  //  // it must be possible to transition to the given 'to' state from the given 'from' state
-  //  invariant: exists t: from.transitions | t.target = to
-  //}
 }
 
 migration {
   // if the old current state does not exist anymore in the new machine states then the new current state is the machine's initial state
-  //forall old, new: Runtime | 
-  //forall oldR: old.Runtime, newR: new.Runtime | 
     not old[Runtime.current] in new[Runtime.machine.states] => (new[Runtime.current] = new[Runtime.machine.initial])
 }
 
