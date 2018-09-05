@@ -25,7 +25,7 @@ import util::Maybe;
 
 list[AlleFormula] generateAlleConstraints(Spec spec, NX2AlleMapping relations) 
   = [singletonMultiplicityConstraint(relName, dom, "xn") | <NaryRelation(relName, dom, ran, false), _, newRuntime()> <- relations]
-  + [singletonMultiplicityConstraint(relName, dom, "d") | <NaryRelation(relName, dom, ran, false), _, distance()> <- relations]
+  //+ [singletonMultiplicityConstraint(relName, dom, "d") | <NaryRelation(relName, dom, ran, false), _, distance()> <- relations]
   + [typeConstraint(relName, dom, ran, "xn", relations) | <NaryRelation(relName, dom, ran, _), _, newRuntime()> <- relations]
   + [distanceDeclaration(nxDom, d, xo, xn) | 
       <NaryRelation(relName, _, nxDom, _), d, distance()> <- relations,
