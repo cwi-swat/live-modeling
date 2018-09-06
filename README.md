@@ -38,8 +38,8 @@ To automatically translate Nextep specifications to AlleAlle, then to Z3, and ex
 2. In the top menu, click on `Rascal -> Start Console`
 3. In the `Terminal` view that appears in the bottom, type `import Pipeline;`
 4. Wait for the `rascal>` prompt to come back (ignore the warnings):
-     * To run the state machine example, type `runNextepSM();`
-     * To run the robotic arm example, type `runNextepRoboticArm();`
+     * To run the state machine example (scenario II from the paper), type `runNextepSM();`
+     * To run the robotic arm example, type `runNextepRoboticArm();` 
 5. In both cases, a new Model Visualizer window will open, displaying the results in the form of tables
 6. All the tables prefixed with `xn_` correspond to the newly found runtime state. For instance, in the state machine example, the `xn_Runtime_current` table displays the `current` state for the new version of the state machine `doors` as inferred by the solver.
 
