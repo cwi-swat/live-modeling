@@ -1,8 +1,25 @@
 # Nextep
 
+## Installation
+
+### Option 1: Virtual Machine
+
+Nextep and its dependencies have been packaged in a Debian VM image that can be downloaded from here: [Nextep-VM](https://www.dropbox.com/s/21wtakq2plkbx5h/Nextep-VM.ova?dl=0). Refer to the [VirtualBox documentation](https://docs.oracle.com/cd/E26217_01/E26796/html/qs-import-vm.html) for instructions on how to import the image in your host system.
+
+The VM comes with default user and administrator accounts:
+
+| Username | Password |
+| -------- | -------- |
+|  nextep  |  nextep  |
+|  root    |  nextep  |
+
+In the VM, run the Eclipse shortcut on the desktop to access a pre-configured Nextep environment. From this point, follow the [Playing with the Examples](#playing-with-the-examples) instructions below.
+
+### Option 2: Manual installation
+
 **_Disclaimer_: Please note that Nextep does not work on Windows systems yet. A Linux-based or MacOS-based system is required. Nextep does not play well with Z3 version 4.4.1. A more recent version of Z3 is required.**
 
-## Setting up the Environment
+#### Setting up the Environment
 
 Nextep is developed in [Racal](https://www.rascal-mpl.org/) and relies on the [AlleAlle library](https://github.com/cwi-swat/allealle) and the [Z3 theorem prover](https://github.com/Z3Prover/z3). The easiest way to get started with Nextep is to set-up an Eclipse installation with the appropriate components:
 
@@ -15,7 +32,7 @@ Nextep is developed in [Racal](https://www.rascal-mpl.org/) and relies on the [A
 5. Open Eclipse and install the Rascal meta-programming environment:
     * Go to `Help -> Install New Software...`, use `https://update.rascal-mpl.org/unstable/` as the update site URL in the `Work with:` textbox, and then check the `Rascal` feature. Follow the instructions to install Rascal (`Next -> Next -> Finish`), and restart Eclipse when asked. In case of any errors, please check instructions on the [Rascal download page](https://www.rascal-mpl.org/start/)
 
-## Getting the Source Code and Examples
+#### Getting the Source Code and Examples
 
 1. In the folder of your choice, clone the `AlleAlle` and `live-modeling` repositories:
      * `git clone https://github.com/cwi-swat/allealle/`
