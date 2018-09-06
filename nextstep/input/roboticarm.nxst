@@ -41,6 +41,9 @@ runtime {
       // Current request is a subset of the current task
       request in task.actions 
     
+      // There is a queue for each subsystem whose action appears in the task
+      forall s: Subsystem | some (s.ssa & task.actions) => (exists q: queues | q.subsystem = s)
+    	
       // Each queued action of the task is removed from the request
       forall q: queues | no (q.actions.item & request)
 
