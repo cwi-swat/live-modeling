@@ -1,8 +1,8 @@
 # Nextep
 
-## Setting up the Environment
+**_Disclaimer_: Please note that Nextep does not work on Windows systems yet. A Linux-based or MacOS-based system is required. Nextep does not play well with Z3 version 4.4.1. A more recent version of Z3 is required.**
 
-**Please note that Nextep does not work on Windows systems yet. A Linux-based or MacOs-based system is required.**
+## Setting up the Environment
 
 Nextep is developed in [Racal](https://www.rascal-mpl.org/) and relies on the [AlleAlle library](https://github.com/cwi-swat/allealle) and the [Z3 theorem prover](https://github.com/Z3Prover/z3). The easiest way to get started with Nextep is to set-up an Eclipse installation with the appropriate components:
 
@@ -13,7 +13,7 @@ Nextep is developed in [Racal](https://www.rascal-mpl.org/) and relies on the [A
 4. Unzip the Eclipse archive and append a new line at the very end to the `eclipse.ini` file it contains:
     * `-Dsolver.z3.path=/usr/bin`. The path must point to the *folder* containing the `z3` executable, *not the full path of the `z3` executable*
 5. Open Eclipse and install the Rascal meta-programming environment:
-    * Go to `Help -> Install New Software...`, use `https://update.rascal-mpl.org/unstable/` as the update site URL in the `Work with:` textbox, and then check the `Rascal` feature. Follow the instructions to install Rascal (`Next -> Next -> Finish`), and restart Eclipse when asked. In case of any errors, please check instructions on the [Rascal download page](https://www.rascal-mpl.org/start/).
+    * Go to `Help -> Install New Software...`, use `https://update.rascal-mpl.org/unstable/` as the update site URL in the `Work with:` textbox, and then check the `Rascal` feature. Follow the instructions to install Rascal (`Next -> Next -> Finish`), and restart Eclipse when asked. In case of any errors, please check instructions on the [Rascal download page](https://www.rascal-mpl.org/start/)
 
 ## Getting the Source Code and Examples
 
@@ -23,7 +23,7 @@ Nextep is developed in [Racal](https://www.rascal-mpl.org/) and relies on the [A
 2. In Eclipse, open the `Rascal` perspective (`Window -> Perspective -> Open Perspective -> Other -> Rascal`)
 3. Navigate to `File -> Import` and select `Existing Projects into Workspace`
 4. In the `Select root directory` box, select the directory containing the `AlleAlle` and `live-modeling` projects you just cloned
-5. Make sure the two projects `allealle` and `nextstep` are checked in the `Projects:` list, and click `Finish`.
+5. Make sure the two projects `allealle` and `nextstep` are checked in the `Projects:` list, and click `Finish`
 6. Wait for Eclipse to build the workspace with the two projects
 
 ## Playing with the Examples
@@ -41,7 +41,7 @@ To automatically translate Nextep specifications to AlleAlle, then to Z3, and ex
      * To run the state machine example (scenario II from the paper), type `runNextepSM();`
      * To run the robotic arm example, type `runNextepRoboticArm();` 
 5. In both cases, a new Model Visualizer window will open, displaying the results in the form of tables
-6. All the tables prefixed with `xn_` correspond to the newly found runtime state. For instance, in the state machine example, the `xn_Runtime_current` table displays the `current` state for the new version of the state machine `doors` as inferred by the solver.
+6. All the tables prefixed with `xn_` correspond to the newly found runtime state. For instance, in the state machine example, the `xn_Runtime_current` table displays the `current` state for the new version of the state machine `doors` as inferred by the solver
 
 The interested reader can refer to the `Pipeline.rsc` file located in the `src` folder of the `nextstep` project to learn more about how Nextep specifications are translated to AlleAlle.
 
@@ -57,4 +57,4 @@ The benchmarks for the state machine example presented in the paper can be repro
 2. In the top menu, click on `Rascal -> Start Console`
 3. In the `Terminal` view that appears in the bottom, type `import benchmark::statemachine::StateMachineBenchmark;`
 4. Run the benchmark by entering `runBothScenarios();`
-5. When the `rascal>` prompt comes back, the results are written in the `nextstep/benchmark/` directory.
+5. When the `rascal>` prompt comes back, the results are written in the `nextstep/benchmark/` directory
