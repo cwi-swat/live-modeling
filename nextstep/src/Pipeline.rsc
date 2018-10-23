@@ -1,6 +1,7 @@
 module Pipeline
 
 import lang::nextstep::Syntax;
+import lang::nextstep::OutputSyntax;
 import lang::nextstep::Resolver;
 import lang::nextstep::Extractor;
 import lang::nextstep::RelationsGenerator;
@@ -22,16 +23,42 @@ import Set;
 import util::Maybe;
 import ParseTree;
 
-void runNextepSM() = runNextep(|project://nextstep/input/statemachine.nxst|);
-void runNextepRoboticArm() = runNextep(|project://nextstep/input/roboticarm.nxst|);
+alias NxtpToAlleTransResult = tuple[Problem alleProblem, NX2AlleMapping mapping]; 
+
+void runAndVisSM() = runAndVis(parseFile(|project://nextstep/input/statemachine.nxst|));
+
+void runAndGetNextModelSM() = runNextep(|project://nextstep/input/statemachine.nxst|);
+void runAndGetNextModelRoboticArm() = runNextep(|project://nextstep/input/roboticarm.nxst|);
 
 void runNextep(loc f) {
   // parse and normalize
   Spec spc = parseFile(f);
-  runNextep(spc);
+  runAndGetNextModel(spc);
 }
 
-void runNextep(Spec spc) {
+void runAndVis(Spec spc) {
+  NxtpToAlleTransResult result = translateNxtpToAlle(spc);
+  // write AlleAlle file
+  writeFile(|project://nextstep/output/<spc@\loc[extension = "alle"].file>|, unparse(result.alleProblem));
+  
+  checkAndVis(result.alleProblem);
+}
+
+loc runAndGetNextModel(Spec spc) {
+  NxtpToAlleTransResult result = translateNxtpToAlle(spc);
+  // write AlleAlle file
+  writeFile(|project://nextstep/output/<spc@\loc[extension = "alle"].file>|, unparse(result.alleProblem));
+  
+  // Run AlleAlle solver and visualize result
+  OutputDef output = checkAndGetNextModel(result.alleProblem, result.mapping);
+  
+  loc outputFile = |project://nextstep/output/<spc@\loc[extension = "nxstout"].file>|;
+  writeFile(outputFile, "<output>");
+  
+  return outputFile;
+}
+
+NxtpToAlleTransResult translateNxtpToAlle(Spec spc) {
   spc = parseFile(normalize(spc));
   
   // extract (instance) models
@@ -48,11 +75,7 @@ void runNextep(Spec spc) {
   Maybe[ObjectiveSection] objectives = generateAlleObjectives(rels);
   
   // write AlleAlle file
-  Problem alleProblem = problem(toList(rels.alle), forms, objectives, nothing());
-  writeFile(|project://nextstep/output/<spc@\loc[extension = "alle"].file>|, unparse(alleProblem));
-  
-  // Run AlleAlle solver and visualize result
-  check(alleProblem);
+  return <problem(toList(rels.alle), forms, objectives, nothing()), rels>;
 }
 
 

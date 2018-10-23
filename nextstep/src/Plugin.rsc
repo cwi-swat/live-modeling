@@ -1,6 +1,7 @@
 module Plugin
 
 import util::IDE;
+import util::Editors;
 import ParseTree;
 
 import Parser;
@@ -12,11 +13,13 @@ void main(){
   str lang = "NextStep";
 
   registerLanguage(lang,"nxst", parseFile); 
+  registerLanguage("NextStep output","nxstout", parseOutputFile);
+   
   contribs = {
     popup(menu("NexStep", [
         action("Run and visualize", (Tree current, loc file) {
           if (/Spec spc := current) {
-            runNextep(spc);
+            edit(runAndGetNextModel(spc));
           }
         })
    ])),

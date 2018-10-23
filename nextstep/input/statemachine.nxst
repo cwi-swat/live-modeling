@@ -52,51 +52,38 @@ migration {
 input {
   old static
     Machine doors 
-      states = opened, closed, locked
+      states = opened, closed
       initial = closed
     
     State opened
       transitions = t2
     
     State closed
-      transitions = t1,t3
-    
-    State locked
-      transitions = t4
-          
+      transitions = t1
+              
     Trans t1 
       target = opened
     
     Trans t2
       target = closed
     
-    Trans t3
-      target = locked
-      
-    Trans t4
-      target = closed  
-
   old runtime
     Runtime x 
       machine = doors 
-      current = locked 
-      visited = v1, v2, v3
+      current = closed 
+      visited = v1, v2
       
     Visit v1 
       state = opened 
-      nr = 0
+      nr = 1
   
     Visit v2 
       state = closed 
       nr = 1
-  
-    Visit v3 
-      state = locked 
-      nr = 0
-  
+    
   new static
     Machine doors 
-      states = opened, closed 
+      states = opened, closed, locked 
       initial = closed
       
     State opened 
@@ -104,10 +91,19 @@ input {
     
     State closed 
       transitions = t1
+    
+    State locked
+      transitions = t3, t4  
       
     Trans t1 
       target = opened
   
     Trans t2 
+      target = closed
+    
+    Trans t3
+      target = locked
+    
+    Trans t4
       target = closed
 }

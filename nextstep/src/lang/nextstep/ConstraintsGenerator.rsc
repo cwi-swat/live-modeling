@@ -195,7 +195,7 @@ Maybe[ObjectiveSection] generateAlleObjectives(NX2AlleMapping rels) {
     [minimize(generateMetric(nxDom, alleRel)) | <NaryRelation(_, _, nxDom, _), alleRel, distance()> <- rels]
   + [minimize(generateMetric(class(nxDom), alleRel)) | <UnaryRelation(nxDom), alleRel, distance()> <- rels];  
   
-  return just(objectives(lex(), criteria));  // which priority is default in Alle?
+  return just(objectives(lex(), criteria)); 
 }
 
 AlleExpr generateMetric(class(Class _), RelationDef alleRel)
