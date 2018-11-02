@@ -38,8 +38,8 @@ void visSolution(Spec spc) {
 }
 
 void runBothScenarios() { runScenario1Benchmark(); runScenario2Benchmark(); }
-void runScenario1Benchmark() = runBenchmark(1, 10, 11, 10, 3000, |project://nextstep/benchmark/result_scenario1.csv|, true);
-void runScenario2Benchmark() = runBenchmark(2, 6, 40, 10, 3000, |project://nextstep/benchmark/result_scenario2.csv|, true);
+void runScenario1Benchmark() = runBenchmark(1, 10, 15, 10, 3000, |project://nextstep/benchmark/result_scenario1b.csv|, true);
+void runScenario2Benchmark() = runBenchmark(2, 6, 40, 10, 3000, |project://nextstep/benchmark/result_scenario2b.csv|, true);
 
 void runBenchmark(int scenario, int startNrOfStates, int endNrOfStates, int runsPerConfig, int solverTimeOutInMs, loc csv, bool saveResult) {
   println("Warming up");

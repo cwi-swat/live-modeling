@@ -7,7 +7,7 @@ static {
       // initial must be a known state
       initial in states
       // all states that are targeted in the transitions must be part of the machine
-      states.transitions.target in states
+      states.transitions.target in states 
     }
   }
   

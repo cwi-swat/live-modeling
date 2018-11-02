@@ -41,14 +41,14 @@ OutputDef checkAndGetNextModel(Problem alleProblem, NX2AlleMapping mapping) {
       stop();
       return interpretResult(currentModel, mapping);
     }
-    case unsat(set[Formula] unsatCore) : alert("Not satisfiable, can not visualize");
-    case trivialSat(Model model) : alert("Trivially satisfiable");
-    case trivialUnsat() : alert("Trivially not satisfiable");  
+    case unsat(set[Formula] unsatCore) : println("Not satisfiable, can not visualize");
+    case trivialSat(Model model) : println("Trivially satisfiable");
+    case trivialUnsat() : println("Trivially not satisfiable");  
   } 
 }
 
 OutputDef interpretResult(Model alleModel, NX2AlleMapping mapping) {
-  NXRelation find(str alleRelName) = nx when /<NXRelation nx, RelationDef alleDef, Model _> := mapping, alleDef.name == alleRelName;
+  NXRelation find(str alleRelName) = nx when <NXRelation nx, RelationDef alleDef, Model _> <- mapping, alleDef.name == alleRelName;
   ModelRelation findModelRel(str nxRelName) = r when ModelRelation r <- alleModel.relations, r.name == "xn_<nxRelName>";
   
   bool isUnary(ModelRelation r) = size(r.heading) == 1;

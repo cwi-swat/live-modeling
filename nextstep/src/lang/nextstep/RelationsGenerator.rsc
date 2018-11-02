@@ -65,6 +65,14 @@ AlleValue nxAtom2alle (strAt(str a)) = idd(a);
 AlleValue nxAtom2alle (intAt(int i)) = alleLit(translation::theories::integer::AST::intLit(i));  
 AlleValue nxAtom2alle (intHole()) = hole();  
 
+@memo
+Class findDomain(set[NXBounds] runtime, str binRel) = dom when bounds(NaryRelation(str r, Class dom, _, _), _) <- runtime, r == binRel; 
+@memo
+RangeType findRange(set[NXBounds] runtime, str binRel) = range when bounds(NaryRelation(str r, _, range:class(_), _), _) <- runtime, r == binRel; 
+@memo
+bool findMultiplicity(set[NXBounds] runtime, str binRel) = isSet when bounds(NaryRelation(str r, _, _, bool isSet), _) <- runtime, r == binRel; 
+
+
 // Generate NXRelations and NXBounds for the new run-time model
 set[NXBounds] generateNX4NewRuntime(set[NXBounds] oldRuntime, set[NXBounds] oldStatic, set[NXBounds] newStatic) {  
   // General idea
@@ -95,13 +103,10 @@ set[NXBounds] generateNX4NewRuntime(set[NXBounds] oldRuntime, set[NXBounds] oldS
   rel[str, NXTuple] newRuntimeBinaryIntFields = {<fieldName, binary(d,intHole())> | bounds(NaryRelation(str fieldName, Class dom, intType(), _), _) <- oldRuntime, single(NXAtom d) <- lookup(dom)}; 
   
   // Last step, convert everything to NXBounds
-  Class findDomain(str binRel) = dom when /bounds(NaryRelation(str r, Class dom, _, _), _) := oldRuntime, r == binRel; 
-  RangeType findRange(str binRel) = range when /bounds(NaryRelation(str r, _, range:class(_), _), _) := oldRuntime, r == binRel; 
-  bool findMultiplicity(str binRel) = isSet when /bounds(NaryRelation(str r, _, _, bool isSet), _) := oldRuntime, r == binRel; 
   
   set[NXBounds] newRuntime = {bounds(UnaryRelation(c), newRuntimeUnaries[c]) | Class c <- newRuntimeUnaries<0>}
-                           + {bounds(NaryRelation(fieldName, findDomain(fieldName), findRange(fieldName), findMultiplicity(fieldName)), newRuntimeBinaries[fieldName]) | str fieldName <- newRuntimeBinaries<0>}
-                           + {bounds(NaryRelation(fieldName, findDomain(fieldName), intType(), false), newRuntimeBinaryIntFields[fieldName]) | str fieldName <- newRuntimeBinaryIntFields<0>};
+                           + {bounds(NaryRelation(fieldName, findDomain(oldRuntime, fieldName), findRange(oldRuntime, fieldName), findMultiplicity(oldRuntime, fieldName)), newRuntimeBinaries[fieldName]) | str fieldName <- newRuntimeBinaries<0>}
+                           + {bounds(NaryRelation(fieldName, findDomain(oldRuntime, fieldName), intType(), false), newRuntimeBinaryIntFields[fieldName]) | str fieldName <- newRuntimeBinaryIntFields<0>};
 
   return newRuntime;
 }

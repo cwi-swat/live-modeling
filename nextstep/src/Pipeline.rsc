@@ -33,7 +33,7 @@ void runAndGetNextModelRoboticArm() = runNextep(|project://nextstep/input/roboti
 void runNextep(loc f) {
   // parse and normalize
   Spec spc = parseFile(f);
-  runAndGetNextModel(spc);
+  runAndWriteNextModelToFile(spc);
 }
 
 void runAndVis(Spec spc) {
@@ -44,18 +44,22 @@ void runAndVis(Spec spc) {
   checkAndVis(result.alleProblem);
 }
 
-loc runAndGetNextModel(Spec spc) {
-  NxtpToAlleTransResult result = translateNxtpToAlle(spc);
-  // write AlleAlle file
-  writeFile(|project://nextstep/output/<spc@\loc[extension = "alle"].file>|, unparse(result.alleProblem));
-  
-  // Run AlleAlle solver and visualize result
-  OutputDef output = checkAndGetNextModel(result.alleProblem, result.mapping);
+loc runAndWriteNextModelToFile(Spec spc) {
+  OutputDef output = runAndGetNextModel(spc);
   
   loc outputFile = |project://nextstep/output/<spc@\loc[extension = "nxstout"].file>|;
   writeFile(outputFile, "<output>");
   
   return outputFile;
+}
+
+OutputDef runAndGetNextModel(Spec spc) {
+  NxtpToAlleTransResult result = translateNxtpToAlle(spc);
+  // write AlleAlle file
+  //writeFile(|project://nextstep/output/<spc@\loc[extension = "alle"].file>|, unparse(result.alleProblem));
+  
+  // Run AlleAlle solver and visualize result
+  return checkAndGetNextModel(result.alleProblem, result.mapping);
 }
 
 NxtpToAlleTransResult translateNxtpToAlle(Spec spc) {
