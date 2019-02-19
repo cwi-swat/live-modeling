@@ -1,0 +1,164 @@
+static {
+	class Machine {
+		states: State*
+		initState: State
+		variables: Variable*
+		events: Event*				
+		transitions: Transition*
+	}
+	
+	class State {
+		nested: Machine*
+		onentry: Action		// another way to model inheritance: have separate relations for subtypes
+		running: Action
+		onexit: Action		
+	}
+
+	class Variable {}
+	
+	class Action {
+		scope : Variable*
+	}
+	
+	class Event {			// event is an action that returns boolean
+		action: Action
+	}
+	
+	class SpawnAction {		// some actions are meant to start execution of a nested machine
+		action: Action
+		machine: Machine
+	}
+	
+	class Transition {
+		from : State
+		to : State
+	}
+	
+	class NormalTransition {
+		trans: Transition	// this is how we model a subset/subclass of Transition
+		onevent: Event
+	}
+	
+	class EpsilonTransition {
+		trans: Transition	// subclass of Transition
+	}
+	
+	class TimeoutTransition {
+		trans: Transition 	// subclass of Transition
+		maxtime: int		// how to model that the maxtime can be a reference to a variable??????
+	} 
+	
+	class WildCardTransition {
+		trans: Transition 	// subclass of Transition (or subclass of NormalTransition)
+		from : State*		// overriding of a field
+		onevent: Event
+	}
+	
+	
+}
+
+
+//Note: the runtime structure does not correspond to the source code and helps to constraint certain semantic relations on the level of the structure
+runtime {
+	class Runtime {			// [in lrp source code] these are contents of LRPInterpreter, except current time
+		timeNow: int
+		runningMachines: RuntimeMachine*		// multiple concurrent (root) machines
+		cache: CachedAction*					//ordered sequence
+		
+		invariants {
+			timeNow > 0
+				
+			// if there are spawn actions in the cache then the corresponding (nested) machines have been started (CLOSURE?!)
+		}		
+	}
+
+	class RuntimeMachine {	// [vs lrp source code] extension of the Machine class
+		machine: Machine	
+		currentState: RuntimeState
+		triggeredTransition: Transition*
+		changedValues: Variable*		
+		
+		invariants {
+			// structurally consistent with the static part
+			currentState.state in machine.states
+			forall t : triggeredTransition | t in machine.transitions
+			forall v: changedValues | v in machine.variables
+			
+			// one or no triggered transition [0..1]
+			one triggeredTransition || no triggeredTransition		
+			
+			// triggered transition leads to the current state
+			forall t : triggeredTransition | t.to = currentState
+			
+			// if the machine has been just started, then it should be in its initial state
+			(exists a: Runtime.cashe.action, sp: SpawnAction | 			// checking subtype
+				sp.action = a && sp.machine = machine) => (currentState.state = machine.initial)
+			
+			// semantics of timeout transitions
+			forall t: machine.transitions, tt: TimeoutTransition | 		// checking subtype
+				(tt.transition = t && t.from = currentState.state) => (Runtime.timeNow <= (tt.maxtime) + (currentState.startTime))
+				
+			// semantics of a transition triggered by an event
+			(exists t: NormalTransition ++ WildCardTransition |			// subtype check
+				t.trans in triggeredTransition) => 
+			(forall t: NormalTransition ++ WildCardTransition |			// subtype check
+				t.trans in triggeredTransition => t.onevent.action in Runtime.cashe.action)
+			
+			// semantics of an epsilon transition: if there an epsilon transition from the current state, then we cannot stay in this state
+			// (i.e. we have just changed the state)
+			(exists t: EpsilonTransition | 								// subtype check
+				currentState.state = t.trans.from) => one triggeredTransition
+			
+			// if no transition was triggered then the state runing action was executed
+			no triggeredTransition <=> currentState.state.running in Runtime.cashe.action
+			
+			// if a transition was triggered then an exit and an entry action were executed
+			one triggeredTransition <=> (exists t: triggeredTransition | t.from.onexit in Runtime.cashe.action) 
+										&& (currentState.state.onentry in Runtime.cashe.action) 
+			
+			// a variable can be changed by executing an ection
+			forall v: changedValues | (exists a: Runtime.cashe.action | v in a.scope)								
+		}
+	}
+	
+	class RuntimeState {	// [vs lrp source code] extension of the State class
+		state: State		
+		startTime: int		
+		runningMachines: RuntimeMachine*		// nested machines
+		
+		invariants {
+			// timer is started
+			startTime > 0 && startTime <= Runtime.timeNow
+			
+			// structurally consistent with the static part
+			forall m: runningMachines | m.machine in state.nested
+			
+			
+		}
+	}
+	
+	class CachedAction {
+		action: Action
+		index: int
+		invariant: index > 0
+	}
+
+}
+
+migration {
+	// time rule
+	new[Runtime.timeNow] >= old[Runtime.timeNow] && new[Runtime.timeNow] <= old[Runtime.timeNow] + 1
+	// not old[Runtime.current] in new[Runtime.machine.states] => (new[Runtime.current] = new[Runtime.machine.initial])
+	
+	// if certain variables have changed we need to update actions that depend on them
+	forall v: (new[Runtime.machine.variables] -- old[Runtime.machine.variables]) ++ (old[Runtime.machine.variables] -- new[Runtime.machine.variables]) |
+		(exists a: Action | v in a.scope) => a in new[Runtime.cashe.action]
+
+	// if the current state is different then we need to execute all necessary actions
+}
+
+input {
+	old static
+	old runtime
+	new static
+}
