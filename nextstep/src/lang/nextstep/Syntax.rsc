@@ -1,16 +1,14 @@
 module lang::nextstep::Syntax
 
-//extend lang::std::Layout;
+extend lang::nextstep::CoreSyntax;
 
-start syntax Spec = StaticDef static DynamicDef dynamic MigrationDef migration InstanceDef instance;
+start syntax Spec = StaticDef static DynamicDef dynamic MigrationDef migration;
 
 syntax StaticDef = "static" "{" Class* classes "}";
 
 syntax DynamicDef = "runtime" "{" Class* classes "}";
 
 syntax MigrationDef = "migration" "{" Formula* rules "}";
-
-syntax InstanceDef = "input" "{" "old" "static" ObjectDef* oldStat "old" "runtime" ObjectDef* oldRun "new" "static" ObjectDef* newStat "}";
 
 //syntax Class = "class" ClassName name Super? Bounds? bounds "{" ClassBody body "}";
 syntax Class = "class" ClassName name "{" ClassBody body "}";
@@ -30,11 +28,6 @@ syntax FieldDecl
 syntax Invariant
   = "invariant" ":" Formula form
   | "invariants" "{" Formula+ forms "}"
-  ;
-
-syntax Type 
-  = class: ClassName className
-  | \int: "int"
   ;
 
 syntax Formula 
@@ -109,35 +102,4 @@ syntax Literal
   = intLit: Int
   ;
   
-syntax ObjectDef 
-  = Type type Atom objectName  FieldInstantiation+ fields 
-  | Type type {Atom ","}* objects 
-  ;  
 
-syntax FieldInstantiation 
-  = VarName fieldName "=" {Atom ","}* atoms
-  | VarName fieldName "=" {Int ","}* atoms
-  | VarName fieldName "=" "[" "]"
-  ;
-
-lexical ClassName = ([A-Z] !<< [A-Z][a-zA-Z0-9_\']* !>> [a-zA-Z0-9_]) \ Keywords;
-lexical VarName = ([a-zA-Z] !<< [a-zA-Z][a-zA-Z0-9_\']* !>> [a-zA-Z0-9_]) \ Keywords;
-lexical Atom = ([a-zA-Z] !<< [a-zA-Z][a-zA-Z0-9_\']* !>> [a-zA-Z0-9_]) \ Keywords;
-
-lexical Int = [0-9]+;
-
-keyword Keywords = "static" | "runtime" | "migration" | "class" | "invariant" | "invariants" | "not" | "no" | "some" | "one" | "forall" | "exists" | "int" | "old" | "new" | "input";
-
-layout Standard 
-  = WhitespaceOrComment* !>> [\ \t\n\f\r] !>> "//";
-  
-syntax WhitespaceOrComment 
-  = whitespace: Whitespace
-  | comment: Comment
-  ; 
-
-lexical Comment = @category="Comment" "//" ![\n\r]* $;
-
-lexical Whitespace 
-  = [\u0009-\u000D \u0020 \u0085 \u00A0 \u1680 \u180E \u2000-\u200A \u2028 \u2029 \u202F \u205F \u3000]
-  ; 

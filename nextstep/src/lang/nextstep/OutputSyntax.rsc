@@ -1,6 +1,6 @@
 module lang::nextstep::OutputSyntax
 
-extend lang::nextstep::Syntax;
+extend lang::nextstep::InstanceSyntax;
 
 start syntax OutputDef = "output" "{" "new" "runtime" ObjectDef* newRuntime "}";
 

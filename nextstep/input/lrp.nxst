@@ -110,7 +110,8 @@ runtime {
 				currentState.state = t.trans.from) => one triggeredTransition
 			
 			// if no transition was triggered then the state runing action was executed
-			no triggeredTransition <=> currentState.state.running in Runtime.cashe.action
+			no triggeredTransition <=> (currentState.state.running in Runtime.cashe.action ||
+									(currentState.state = machine.initial && currentState.state.onentry in Runtime.cashe.action))
 			
 			// if a transition was triggered then an exit and an entry action were executed
 			one triggeredTransition <=> (exists t: triggeredTransition | t.from.onexit in Runtime.cashe.action) 
@@ -148,17 +149,13 @@ runtime {
 migration {
 	// time rule
 	new[Runtime.timeNow] >= old[Runtime.timeNow] && new[Runtime.timeNow] <= old[Runtime.timeNow] + 1
+	
+	// if a current state has been removed --> CLOSURE
 	// not old[Runtime.current] in new[Runtime.machine.states] => (new[Runtime.current] = new[Runtime.machine.initial])
 	
-	// if certain variables have changed we need to update actions that depend on them
+	// if certain variables have changed we need to update (reexecute) actions that depend on them
 	forall v: (new[Runtime.machine.variables] -- old[Runtime.machine.variables]) ++ (old[Runtime.machine.variables] -- new[Runtime.machine.variables]) |
 		(exists a: Action | v in a.scope) => a in new[Runtime.cashe.action]
 
 	// if the current state is different then we need to execute all necessary actions
-}
-
-input {
-	old static
-	old runtime
-	new static
 }

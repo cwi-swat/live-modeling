@@ -1,6 +1,7 @@
 module Pipeline
 
 import lang::nextstep::Syntax;
+import lang::nextstep::InstanceSyntax;
 import lang::nextstep::OutputSyntax;
 import lang::nextstep::Resolver;
 import lang::nextstep::Extractor;
@@ -25,27 +26,28 @@ import ParseTree;
 
 alias NxtpToAlleTransResult = tuple[Problem alleProblem, NX2AlleMapping mapping]; 
 
-void runAndVisSM() = runAndVis(parseFile(|project://nextstep/input/statemachine.nxst|));
+void runAndVisSM() = runAndVis(parseFile(|project://nextstep/input/statemachine.nxst|), parseInstanceFile(|project://nextstep/input/stmInstance1.nxstin|));
 
-void runAndGetNextModelSM() = runNextep(|project://nextstep/input/statemachine.nxst|);
-void runAndGetNextModelRoboticArm() = runNextep(|project://nextstep/input/roboticarm.nxst|);
+void runAndGetNextModelSM() = runNextep(|project://nextstep/input/statemachine.nxst|, |project://nextstep/input/stmInstance1.nxstin|);
+void runAndGetNextModelRoboticArm() = runNextep(|project://nextstep/input/roboticarm.nxst|, |project://nextstep/input/rbaInstance1.nxstin|);
 
-void runNextep(loc f) {
+void runNextep(loc f1, loc f2) {
   // parse and normalize
-  Spec spc = parseFile(f);
-  runAndWriteNextModelToFile(spc);
+  Spec spc = parseFile(f1);
+  Instance inst = parseInstanceFile(f2);
+  runAndWriteNextModelToFile(spc, inst);
 }
 
-void runAndVis(Spec spc) {
-  NxtpToAlleTransResult result = translateNxtpToAlle(spc);
+void runAndVis(Spec spc, NextepInstance inst) {
+  NxtpToAlleTransResult result = translateNxtpToAlle(spc, inst);
   // write AlleAlle file
   writeFile(|project://nextstep/output/<spc@\loc[extension = "alle"].file>|, unparse(result.alleProblem));
   
   checkAndVis(result.alleProblem);
 }
 
-loc runAndWriteNextModelToFile(Spec spc) {
-  OutputDef output = runAndGetNextModel(spc);
+loc runAndWriteNextModelToFile(Spec spc, NextepInstance inst) {
+  OutputDef output = runAndGetNextModel(spc, inst);
   
   loc outputFile = |project://nextstep/output/<spc@\loc[extension = "nxstout"].file>|;
   writeFile(outputFile, "<output>");
@@ -53,8 +55,8 @@ loc runAndWriteNextModelToFile(Spec spc) {
   return outputFile;
 }
 
-OutputDef runAndGetNextModel(Spec spc) {
-  NxtpToAlleTransResult result = translateNxtpToAlle(spc);
+OutputDef runAndGetNextModel(Spec spc, NextepInstance inst) {
+  NxtpToAlleTransResult result = translateNxtpToAlle(spc, inst);
   // write AlleAlle file
   //writeFile(|project://nextstep/output/<spc@\loc[extension = "alle"].file>|, unparse(result.alleProblem));
   
@@ -62,11 +64,11 @@ OutputDef runAndGetNextModel(Spec spc) {
   return checkAndGetNextModel(result.alleProblem, result.mapping);
 }
 
-NxtpToAlleTransResult translateNxtpToAlle(Spec spc) {
+NxtpToAlleTransResult translateNxtpToAlle(Spec spc, NextepInstance inst) {
   spc = parseFile(normalize(spc));
   
   // extract (instance) models
-  Models models = addNewRuntime(extract(spc, resolveTypes(spc)));
+  Models models = addNewRuntime(extract(spc, resolveTypes(spc), inst));
  
   // generate AlleAlle relations 
   NX2AlleMapping rels = generateAlleRelations(models);

@@ -7,6 +7,7 @@
 module lang::nextstep::Extractor
 
 import lang::nextstep::Syntax;
+import lang::nextstep::InstanceSyntax;
 import lang::nextstep::Resolver;
 
 import String;
@@ -49,7 +50,7 @@ data Model
 alias Models = map[Model, set[NXBounds]];
 
 // Main entry	
-Models extract(Spec spc, ResolvedTypes res) {
+Models extract(Spec spc, ResolvedTypes res, NextepInstance inst) {
   
   // Extract (generic) relations
   list[NXRelation] rels = extractRelations(spc, res);
@@ -58,9 +59,9 @@ Models extract(Spec spc, ResolvedTypes res) {
                                + (name : r       | r: NaryRelation(str name, _, _, _) <- rels);
   
   // Extract bounds (concrete instances)
-  Models result = (oldStatic():  extractBounds({objd | ObjectDef objd <- spc.instance.oldStat}, relDefs)) +
-                  (newStatic():  extractBounds({objd | ObjectDef objd <- spc.instance.newStat}, relDefs)) +
-                  (oldRuntime(): extractBounds({objd | ObjectDef objd <- spc.instance.oldRun}, relDefs));
+  Models result = (oldStatic():  extractBounds({objd | ObjectDef objd <- inst.oldStat}, relDefs)) +
+                  (newStatic():  extractBounds({objd | ObjectDef objd <- inst.newStat}, relDefs)) +
+                  (oldRuntime(): extractBounds({objd | ObjectDef objd <- inst.oldRun}, relDefs));
   
   //println(result);
   

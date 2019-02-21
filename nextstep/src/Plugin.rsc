@@ -8,11 +8,13 @@ import Parser;
 
 import Pipeline;
 import lang::nextstep::Syntax;
+import lang::nextstep::InstanceSyntax;
 
 void main(){
   str lang = "NextStep";
 
   registerLanguage(lang,"nxst", parseFile); 
+  registerLanguage("Nextep input","nxstin", parseInstanceFile); 
   registerLanguage("NextStep output","nxstout", parseOutputFile);
    
   contribs = {
