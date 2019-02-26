@@ -13,6 +13,7 @@ import translation::theories::integer::AST; // AlleAlle
 
 import String;
 import IO;
+import Map;
 
 alias NX2AlleMapping = rel[NXRelation nx, RelationDef alle, Model model];
 
@@ -95,9 +96,17 @@ set[NXBounds] generateNX4NewRuntime(set[NXBounds] oldRuntime, set[NXBounds] oldS
   // First do the classes:
   map[str, tuple[Class,Class]] classLookup = (fieldName : <dom,range> | bounds(NaryRelation(str fieldName, Class dom, class(Class range), bool isSet), _) <- oldRuntime);
   
+  // debug: problem is between here and below 26.02.2019
+  println("   debug 0");
+  println([b | b <- domain(classLookup)]);
+  
   set[NXTuple] lookup(Class c) = (newRuntimeUnaries + absoluteStaticTups)[c];
   
   rel[str, NXTuple] newRuntimeBinaries = {<fieldName, binary(d,r)> | str fieldName <- classLookup, <Class dom, Class range> := classLookup[fieldName], single(NXAtom d) <- lookup(dom), single(NXAtom r) <- lookup(range)};
+   
+  // debug: problem shows up here 26.02.2019
+  println("   debug 1");
+  println([b<0> | b <- newRuntimeBinaries]);   
    
   // Now do the integer fields:
   rel[str, NXTuple] newRuntimeBinaryIntFields = {<fieldName, binary(d,intHole())> | bounds(NaryRelation(str fieldName, Class dom, intType(), _), _) <- oldRuntime, single(NXAtom d) <- lookup(dom)}; 
@@ -107,6 +116,11 @@ set[NXBounds] generateNX4NewRuntime(set[NXBounds] oldRuntime, set[NXBounds] oldS
   set[NXBounds] newRuntime = {bounds(UnaryRelation(c), newRuntimeUnaries[c]) | Class c <- newRuntimeUnaries<0>}
                            + {bounds(NaryRelation(fieldName, findDomain(oldRuntime, fieldName), findRange(oldRuntime, fieldName), findMultiplicity(oldRuntime, fieldName)), newRuntimeBinaries[fieldName]) | str fieldName <- newRuntimeBinaries<0>}
                            + {bounds(NaryRelation(fieldName, findDomain(oldRuntime, fieldName), intType(), false), newRuntimeBinaryIntFields[fieldName]) | str fieldName <- newRuntimeBinaryIntFields<0>};
+
+	// debug: here is a problem 26.02.2019
+	println("   debug 2");
+	println(["<name>" | b <- newRuntime, NaryRelation(str name, _, _, _) := b.r]);
+	println(["<b.r.class.name>" | b <- newRuntime, UnaryRelation(_) := b.r]);
 
   return newRuntime;
 }

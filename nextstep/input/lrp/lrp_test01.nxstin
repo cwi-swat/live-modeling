@@ -1,0 +1,51 @@
+// LRPCompareProgramTests >> harmless edits >> testConsistentAddedState
+input {
+  old static
+  	Machine blah
+  		states = o
+  		initState = o
+  		variables = []
+		  events = []				
+		  transitions = []
+  	State o
+  		nested = []
+		  onentry = []
+		  running = []
+		  onexit = []
+  old runtime
+  	Runtime x
+  		timeNow = 1
+		  runningMachines = rblah
+		  cache = []
+	  RuntimeMachine r_blah
+		  machine = blah	
+		  currentState = r_o
+		  triggeredTransition = []
+		  changedValues = []
+    RuntimeState r_o
+		  state = o	
+		  startTime = 0		
+		  runningMachines = []
+  new static
+  	Machine blah
+  		states = o, two
+  		initState = o
+  		transitions = t1
+  		variables = []
+		  events = []				
+  	State o
+  		nested = []
+		  onentry = []
+		  running = []
+		  onexit = []
+  	State two
+  		nested = []
+		  onentry = []
+		  running = []
+		  onexit = []
+  	Transition t1
+  		from = o
+  		to = two
+  	EpsilonTransition et1
+  		trans = t1
+}
