@@ -54,6 +54,7 @@ syntax Formula
   | intGt:      Expr "\>" Expr
   | intLte:     Expr "\<=" Expr
   | intLt:      Expr "\<" Expr
+//  | intEq:	Expr "=" Expr  
   ;
 
 syntax Expr
@@ -74,10 +75,10 @@ syntax Expr
 
 
 syntax Expr
-  = count:      "count" "(" Expr ")"
-  | avg:        "avg" "(" Expr ")"
-  | min:        "min" "(" Expr ")"
-  | max:        "max" "(" Expr ")"
+  = count:      "count" "(" Expr ")"	// not implemented
+  | avg:        "avg" "(" Expr ")"		// not implemented
+  | min:        "min" "(" Expr ")"		// not implemented
+  | max:        "max" "(" Expr ")"		// not implemented
   | abs:        "|" Expr "|"
   > left ( div: Expr "\\" Expr
          | mul: Expr "*" Expr

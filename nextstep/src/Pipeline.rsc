@@ -27,6 +27,7 @@ import ParseTree;
 alias NxtpToAlleTransResult = tuple[Problem alleProblem, NX2AlleMapping mapping]; 
 
 void runAndVisSM() = runAndVis(parseFile(|project://nextstep/input/statemachine.nxst|), parseInstanceFile(|project://nextstep/input/stmInstance1.nxstin|));
+void runAndVisRBA() = runAndVis(parseFile(|project://nextstep/input/roboticarm.nxst|), parseInstanceFile(|project://nextstep/input/rbaInstance1.nxstin|));
 
 void runAndGetNextModelSM() = runNextep(|project://nextstep/input/statemachine.nxst|, |project://nextstep/input/stmInstance1.nxstin|);
 void runAndGetNextModelRoboticArm() = runNextep(|project://nextstep/input/roboticarm.nxst|, |project://nextstep/input/rbaInstance1.nxstin|);
@@ -34,7 +35,7 @@ void runAndGetNextModelRoboticArm() = runNextep(|project://nextstep/input/roboti
 void runNextep(loc f1, loc f2) {
   // parse and normalize
   Spec spc = parseFile(f1);
-  Instance inst = parseInstanceFile(f2);
+  NextepInstance inst = parseInstanceFile(f2);
   runAndWriteNextModelToFile(spc, inst);
 }
 

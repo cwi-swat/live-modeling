@@ -16,12 +16,14 @@ import lang::nextstep::RelationsGenerator;
 import lang::nextstep::Annotator;
 import IO;
 import List;
+import Map;
 import String;
 import ParseTree;
 import util::Maybe;
 
 //anno str Expr@alleRel;
 //anno str Class@alleRel;
+
 
 list[AlleFormula] generateAlleConstraints(Spec spec, NX2AlleMapping relations) 
   = [singletonMultiplicityConstraint(relName, dom, "xn") | <NaryRelation(relName, dom, ran, false), _, newRuntime()> <- relations]
@@ -115,42 +117,138 @@ AlleExpr translate((Expr)`<Expr expr> where (<RestrictExpr lhs> = <RestrictExpr 
 AlleLiteral translate((Literal)`<Int i>`) = intLit(toInt("<i>"));
 CriteriaExpr translateConstraintExpr(Literal l) = litt(translate(l));
 
-// arithmetics
-AlleFormula translate((Formula)`<Expr lhs> \>= <Literal rhs>`) =
-   nonEmpty(select(translate(lhs), 
-            gte(att("val"), translateConstraintExpr(rhs))));
-AlleFormula translate((Formula)`<Expr lhs> \>= <Expr rhs>`) =
-   nonEmpty(select(product(rename(translate(lhs), [rename(v1, "val")]), 
-                           rename(translate(rhs), [rename(v2, "val")])),
-            gte(att(v1), att(v2))))
-   when v1 := "val<lhs@\loc.offset>", v2 := "val<rhs@\loc.offset>";
+//	ARITHMETICS
 
-AlleFormula translate((Formula)`<Expr lhs> \> <Literal rhs>`) = 
-  nonEmpty(select(translate(lhs), 
-            gt(att("val"), translateConstraintExpr(rhs))));
-AlleFormula translate((Formula)`<Expr lhs> \> <Expr rhs>`) = 
-   nonEmpty(select(product(rename(translate(lhs), [rename(v1, "val")]), 
-                           rename(translate(rhs), [rename(v2, "val")])),
-            gt(att(v1), att(v2))))
-   when v1 := "val<lhs@\loc.offset>", v2 := "val<rhs@\loc.offset>";
+//AlleFormula translate((Formula)`<Expr lhs> \>= <Literal rhs>`) =
+//   nonEmpty(select(translate(lhs), 
+//            gte(att("val"), translateConstraintExpr(rhs))));
+//AlleFormula translate((Formula)`<Expr lhs> \>= <Expr rhs>`) =
+//   nonEmpty(select(product(rename(translate(lhs), [rename(v1, "val")]), 
+//                           rename(translate(rhs), [rename(v2, "val")])),
+//            gte(att(v1), att(v2))))
+//   when v1 := "val<lhs@\loc.offset>", v2 := "val<rhs@\loc.offset>";
+//
+//AlleFormula translate((Formula)`<Expr lhs> \> <Literal rhs>`) = 
+//  nonEmpty(select(translate(lhs), 
+//            gt(att("val"), translateConstraintExpr(rhs))));
+//AlleFormula translate((Formula)`<Expr lhs> \> <Expr rhs>`) = 
+//   nonEmpty(select(product(rename(translate(lhs), [rename(v1, "val")]), 
+//                           rename(translate(rhs), [rename(v2, "val")])),
+//            gt(att(v1), att(v2))))
+//   when v1 := "val<lhs@\loc.offset>", v2 := "val<rhs@\loc.offset>";
+//
+//AlleFormula translate((Formula)`<Expr lhs> \<= <Literal rhs>`) = 
+//  nonEmpty(select(translate(lhs), 
+//            lte(att("val"), translateConstraintExpr(rhs))));
+//AlleFormula translate((Formula)`<Expr lhs> \<= <Expr rhs>`) = 
+//   nonEmpty(select(product(rename(translate(lhs), [rename(v1, "val")]), 
+//                           rename(translate(rhs), [rename(v2, "val")])),
+//            lte(att(v1), att(v2))))
+//   when v1 := "val<lhs@\loc.offset>", v2 := "val<rhs@\loc.offset>";
+//
+//AlleFormula translate((Formula)`<Expr lhs> \< <Literal rhs>`) = 
+//  nonEmpty(select(translate(lhs), 
+//            lt(att("val"), translateConstraintExpr(rhs))));
+//AlleFormula translate((Formula)`<Expr lhs> \< <Expr rhs>`) = 
+//   nonEmpty(select(product(rename(translate(lhs), [rename(v1, "val")]), 
+//                           rename(translate(rhs), [rename(v2, "val")])),
+//            lt(att(v1), att(v2))))
+//   when v1 := "val<lhs@\loc.offset>", v2 := "val<rhs@\loc.offset>";
 
-AlleFormula translate((Formula)`<Expr lhs> \<= <Literal rhs>`) = 
-  nonEmpty(select(translate(lhs), 
-            lte(att("val"), translateConstraintExpr(rhs))));
-AlleFormula translate((Formula)`<Expr lhs> \<= <Expr rhs>`) = 
-   nonEmpty(select(product(rename(translate(lhs), [rename(v1, "val")]), 
-                           rename(translate(rhs), [rename(v2, "val")])),
-            lte(att(v1), att(v2))))
-   when v1 := "val<lhs@\loc.offset>", v2 := "val<rhs@\loc.offset>";
 
-AlleFormula translate((Formula)`<Expr lhs> \< <Literal rhs>`) = 
-  nonEmpty(select(translate(lhs), 
-            lt(att("val"), translateConstraintExpr(rhs))));
-AlleFormula translate((Formula)`<Expr lhs> \< <Expr rhs>`) = 
-   nonEmpty(select(product(rename(translate(lhs), [rename(v1, "val")]), 
-                           rename(translate(rhs), [rename(v2, "val")])),
-            lt(att(v1), att(v2))))
-   when v1 := "val<lhs@\loc.offset>", v2 := "val<rhs@\loc.offset>";
+// new ARITHMETICS 
+
+// Data type for unfolding arithmetic expressions
+data ArithmExpr = arithmExpr(map[str, AlleExpr] renaming, CriteriaExpr alleExpr);
+
+// Translation of formulas
+AlleFormula translate((Formula)`<Expr lhs> \>= <Expr rhs>`) {
+	l = translateArithmeticExpr(lhs);
+	r = translateArithmeticExpr(rhs);
+		
+	domainExpr = buildProduct([rename(operand, [rename(v, "val")]) | <v, operand> <- toList(l.renaming + r.renaming)]);
+		
+	return nonEmpty(select(domainExpr , gte(l.alleExpr, r.alleExpr)));
+}
+
+AlleFormula translate((Formula)`<Expr lhs> \> <Expr rhs>`) {
+	l = translateArithmeticExpr(lhs);
+	r = translateArithmeticExpr(rhs);
+		
+	domainExpr = buildProduct([rename(operand, [rename(v, "val")]) | <v, operand> <- toList(l.renaming + r.renaming)]);
+		
+	return nonEmpty(select(domainExpr , gt(l.alleExpr, r.alleExpr)));
+}
+
+AlleFormula translate((Formula)`<Expr lhs> \<= <Expr rhs>`) {
+	l = translateArithmeticExpr(lhs);
+	r = translateArithmeticExpr(rhs);
+		
+	domainExpr = buildProduct([rename(operand, [rename(v, "val")]) | <v, operand> <- toList(l.renaming + r.renaming)]);
+		
+	return nonEmpty(select(domainExpr , lte(l.alleExpr, r.alleExpr)));
+}
+
+AlleFormula translate((Formula)`<Expr lhs> \< <Expr rhs>`) {
+	l = translateArithmeticExpr(lhs);
+	r = translateArithmeticExpr(rhs);
+		
+	domainExpr = buildProduct([rename(operand, [rename(v, "val")]) | <v, operand> <- toList(l.renaming + r.renaming)]);
+		
+	return nonEmpty(select(domainExpr , lt(l.alleExpr, r.alleExpr)));
+}
+
+AlleExpr buildProduct(list[AlleExpr] operands)
+	= product(head(operands), buildProduct(operands[1..]))
+	when size(operands) > 1;
+	
+AlleExpr buildProduct(list[AlleExpr] operands)
+	= head(operands)
+	when size(operands) <= 1;	
+
+
+// Translation of expressions: recursive descend along a tree with arithmetic expressions
+
+// Nodes of a tree with arithmetic expressions: +, -, *, \\, ||, ()
+ArithmExpr translateArithmeticExpr((Expr)`<Expr lhs> + <Expr rhs>`) {
+	l = translateArithmeticExpr(lhs);
+	r = translateArithmeticExpr(rhs);
+	return arithmExpr(l.renaming + r.renaming, add(l.alleExpr, r.alleExpr));
+}
+
+ArithmExpr translateArithmeticExpr((Expr)`<Expr lhs> - <Expr rhs>`) {
+	l = translateArithmeticExpr(lhs);
+	r = translateArithmeticExpr(rhs);
+	return arithmExpr(l.renaming + r.renaming, sub(l.alleExpr, r.alleExpr));
+}
+
+ArithmExpr translateArithmeticExpr((Expr)`<Expr lhs> * <Expr rhs>`) {
+	l = translateArithmeticExpr(lhs);
+	r = translateArithmeticExpr(rhs);
+	return arithmExpr(l.renaming + r.renaming, mult(l.alleExpr, r.alleExpr));
+}
+
+ArithmExpr translateArithmeticExpr((Expr)`<Expr lhs> \\ <Expr rhs>`) {
+	l = translateArithmeticExpr(lhs);
+	r = translateArithmeticExpr(rhs);
+	return arithmExpr(l.renaming + r.renaming, div(l.alleExpr, r.alleExpr));
+}
+
+ArithmExpr translateArithmeticExpr((Expr)`| <Expr ex> |`) {
+	aex = translateArithmeticExpr(ex);
+	return arithmExpr(aex.renaming, abs(aex.alleExpr));
+}
+
+ArithmExpr translateArithmeticExpr((Expr)`( <Expr ex> )`)
+	= translateArithmeticExpr(ex);
+
+// Leaves of a tree with arithmetic expressions: literals and 'normal' Nextep expressions
+ArithmExpr translateArithmeticExpr((Expr)`<Literal l>`) 
+	= arithmExpr( (), translateConstraintExpr(l) );
+
+default ArithmExpr translateArithmeticExpr(Expr expr)
+	= arithmExpr( (v1: translate(expr)), att(v1) )
+		when v1 := "val<expr@\loc.offset>";
 
  //Expr
  // = count:      "count" "(" Expr ")"
