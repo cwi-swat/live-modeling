@@ -75,11 +75,11 @@ set[NXBounds] extractBounds(set[ObjectDef] objDefs, map[str, NXRelation] rels) {
   
   // extract bounds for unary relations from objects definitions (including those without fields)
   set[str] declaredRels = {"<tp>" | (ObjectDef)`<Type tp> <Atom _> <FieldInstantiation+ _>` <- objDefs}
-                        + {"<tp>" | (ObjectDef)`<Type tp> <{Atom ","}* _>` <- objDefs};
+                        + {"<tp>" | (ObjectDef)`<Type tp> <{Atom ","}* _>;` <- objDefs};
   
   for (str relName <- declaredRels, UnaryRelation(_) := rels[relName]) {
     set[NXTuple] tpls = {single(strAt("<a>")) | (ObjectDef)`<Type tp> <Atom a> <FieldInstantiation+ _>` <- objDefs, "<tp>" == relName}
-                      + {single(strAt("<a>")) | (ObjectDef)`<Type tp> <{Atom ","}* objs>` <- objDefs, "<tp>" == relName, a <- objs};
+                      + {single(strAt("<a>")) | (ObjectDef)`<Type tp> <{Atom ","}* objs>;` <- objDefs, "<tp>" == relName, a <- objs};
     
     bnds += bounds(rels[relName], tpls);
   } 
@@ -97,8 +97,8 @@ set[NXBounds] extractBounds(set[ObjectDef] objDefs, map[str, NXRelation] rels) {
     bnds += bounds(rels[relName], tpls);
   }
   
-  // add relations without object or field definitions (without instances): with an empty set of bounds
-  bnds += {bounds(rels[relName], {}) | relName <- rels, relName notin (declaredRels + declaredBins)};                              
+  // Deprivated!! add relations without object or field definitions (without instances): with an empty set of bounds
+  //bnds += {bounds(rels[relName], {}) | relName <- rels, relName notin (declaredRels + declaredBins)};                              
   
   return bnds;
 }

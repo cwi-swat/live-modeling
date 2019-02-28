@@ -77,12 +77,12 @@ bool findMultiplicity(set[NXBounds] runtime, str binRel) = isSet when bounds(Nar
 // Generate NXRelations and NXBounds for the new run-time model
 set[NXBounds] generateNX4NewRuntime(set[NXBounds] oldRuntime, set[NXBounds] oldStatic, set[NXBounds] newStatic) {  
   
-  //println("   debug (binary) input");
-  //println( {"<r>"| bounds(NaryRelation(str r, Class domain, RangeType range, bool isSet), _) <- oldRuntime} );
-  ////println( {"<c.name >"| bounds(UnaryRelation(Class c),  _) <- oldRuntime} );
-  //println("   debug (unary static) input");
-  //println( {"<c.name >"| bounds(UnaryRelation(Class c),  _) <- oldStatic + newStatic} );
-  //println();
+  println("   debug (binary) input");
+  println( {"<r>"| bounds(NaryRelation(str r, Class domain, RangeType range, bool isSet), _) <- oldRuntime} );
+  //println( {"<c.name >"| bounds(UnaryRelation(Class c),  _) <- oldRuntime} );
+  println("   debug (unary static) input");
+  println( {"<c.name >"| bounds(UnaryRelation(Class c),  _) <- oldStatic + newStatic} );
+  println();
   
   // General idea
   // 1) All classes defined in the runtime, add n (n = 2) extra atoms to the list 
@@ -105,29 +105,30 @@ set[NXBounds] generateNX4NewRuntime(set[NXBounds] oldRuntime, set[NXBounds] oldS
   map[str, tuple[Class,Class]] classLookup = (fieldName : <dom,range> | bounds(NaryRelation(str fieldName, Class dom, class(Class range), bool isSet), _) <- oldRuntime);
   
   // debug: problem is between here and below 26.02.2019
-  //println("   debug 0");
-  ////println([b | b <- domain(classLookup)]);
-  //println(["<f>: <d.name> - <r.name>" | f <- classLookup, <Class d, Class r> := classLookup[f]]);
-  //println(["<c.name>" | <Class c, _> <- newRuntimeUnaries + absoluteStaticTups]);
-  //println();
+  println("   debug 0");
+  //println([b | b <- domain(classLookup)]);
+  println(["<f>: <d.name> - <r.name>" | f <- classLookup, <Class d, Class r> := classLookup[f]]);
+  println(["<c.name>" | <Class c, _> <- newRuntimeUnaries + absoluteStaticTups]); // <- no Variable here!
+  println();
   
   
   set[NXTuple] lookup(Class c) = (newRuntimeUnaries + absoluteStaticTups)[c];
-  
+  // cartesian product binary(d,r)
   rel[str, NXTuple] newRuntimeBinaries = {<fieldName, binary(d,r)> | str fieldName <- classLookup, <Class dom, Class range> := classLookup[fieldName], single(NXAtom d) <- lookup(dom), single(NXAtom r) <- lookup(range)};
    
   // debug: problem shows up here 26.02.2019
-  //println("   debug 1");
-  //println([b<0> | b <- newRuntimeBinaries]);   
+  println("   debug 1");
+  println([b<0> | b <- newRuntimeBinaries]);   
    
   // Now do the integer fields:
   rel[str, NXTuple] newRuntimeBinaryIntFields = {<fieldName, binary(d,intHole())> | bounds(NaryRelation(str fieldName, Class dom, intType(), _), _) <- oldRuntime, single(NXAtom d) <- lookup(dom)}; 
   
   // Last step, convert everything to NXBounds
-  
+  // and add empty relations (with empty bounds) <- new!!! 28.02.2018  
   set[NXBounds] newRuntime = {bounds(UnaryRelation(c), newRuntimeUnaries[c]) | Class c <- newRuntimeUnaries<0>}
                            + {bounds(NaryRelation(fieldName, findDomain(oldRuntime, fieldName), findRange(oldRuntime, fieldName), findMultiplicity(oldRuntime, fieldName)), newRuntimeBinaries[fieldName]) | str fieldName <- newRuntimeBinaries<0>}
-                           + {bounds(NaryRelation(fieldName, findDomain(oldRuntime, fieldName), intType(), false), newRuntimeBinaryIntFields[fieldName]) | str fieldName <- newRuntimeBinaryIntFields<0>};
+                           + {bounds(NaryRelation(fieldName, findDomain(oldRuntime, fieldName), intType(), false), newRuntimeBinaryIntFields[fieldName]) | str fieldName <- newRuntimeBinaryIntFields<0>}
+                           + {};
 
 	// debug: here is a problem 26.02.2019
 	println("   debug 2");

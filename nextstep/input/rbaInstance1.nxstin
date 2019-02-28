@@ -7,9 +7,7 @@ input {
       ssa = up, down
     Subsystem hand
       ssa = grab
-    Action up
-    Action down
-    Action grab
+    Action up, down, grab;
     OrderedPair op1
       action = grab
       succeeds = down
@@ -43,7 +41,7 @@ input {
       ssa = grab
     Subsystem trigger
       ssa = switch
-    Action up, down, grab, switch
+    Action up, down, grab, switch;
     OrderedPair op1
       action = grab
       succeeds = down

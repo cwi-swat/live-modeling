@@ -76,6 +76,14 @@ NxtpToAlleTransResult translateNxtpToAlle(Spec spc, NextepInstance inst) {
   // generate AlleAlle relations 
   NX2AlleMapping rels = generateAlleRelations(models);
   
+  // debug: problem in the line above (relation is not generated for cache)
+  println("   debug generateAlleRelations");
+  println({ "<alle.name>"| <NXRelation nx, RelationDef alle, oldStatic()> <- rels});
+  println({ "<alle.name>"| <NXRelation nx, RelationDef alle, oldRuntime()> <- rels});
+  println({ "<alle.name>"| <NXRelation nx, RelationDef alle, newStatic()> <- rels});
+  println({ "<alle.name>"| <NXRelation nx, RelationDef alle, newRuntime()> <- rels});
+  println();
+  
   // type check (and resolve) nextep expressions using AlleAlle relations
   Spec annotatedSpc = annotate(spc,rels);
   

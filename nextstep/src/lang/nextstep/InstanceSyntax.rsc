@@ -6,7 +6,7 @@ start syntax NextepInstance = "input" "{" "old" "static" ObjectDef* oldStat "old
 
 syntax ObjectDef 
   = Type type Atom objectName  FieldInstantiation+ fields 
-  | Type type {Atom ","}* objects 
+  | Type type {Atom ","}* objects ";"
   ;  
 
 syntax FieldInstantiation 

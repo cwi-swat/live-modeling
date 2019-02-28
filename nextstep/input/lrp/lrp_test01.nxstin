@@ -12,20 +12,34 @@ input {
 		  onentry = []
 		  running = []
 		  onexit = []
+		
+		Variable;
+    Action;
+    Event;
+    SpawnAction;
+    Transition;
+    NormalTransition;
+    EpsilonTransition;
+    TimeoutTransition;
+    WildCardTransition;
+      
+      
   old runtime
   	Runtime x
   		timeNow = 1
 		  runningMachines = rblah
 		  cache = []
-	  RuntimeMachine r_blah
+	  RuntimeMachine rblah
 		  machine = blah	
-		  currentState = r_o
+		  currentState = ro
 		  triggeredTransition = []
 		  changedValues = []
-    RuntimeState r_o
+    RuntimeState ro
 		  state = o	
 		  startTime = 0		
 		  runningNestedMachines = []
+		CachedAction;	  
+		  
   new static
   	Machine blah
   		states = o, two
@@ -48,4 +62,12 @@ input {
   		to = two
   	EpsilonTransition et1
   		trans = t1
+  		
+    Variable;
+    Action;
+    Event;    
+    SpawnAction;    
+    NormalTransition;    
+    TimeoutTransition;
+    WildCardTransition;  		
 }
