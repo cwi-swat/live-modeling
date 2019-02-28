@@ -316,8 +316,14 @@ void resolve(e:(Expr)`new[<Expr expr>]`, Scope scp, Collect col) {
   
   col.addHeader(e@\loc, col.getHeader(expr@\loc));
 }
-//  ;
-//
+
+// UT: update for the arithmetic expressions (is the following correct???)
+//void resolve((Expr)`<Expr lhs> \\ <Expr rhs>`, Scope scp, Collect col) { resolve(lhs,scp,col); resolve(rhs,scp,col);} 
+//void resolve((Expr)`<Expr lhs> * <Expr rhs>`, Scope scp, Collect col) { resolve(lhs,scp,col); resolve(rhs,scp,col);} 
+//void resolve((Expr)`<Expr lhs> + <Expr rhs>`, Scope scp, Collect col) { resolve(lhs,scp,col); resolve(rhs,scp,col);} 
+//void resolve((Expr)`<Expr lhs> - <Expr rhs>`, Scope scp, Collect col) { resolve(lhs,scp,col); resolve(rhs,scp,col);} 
+//void resolve((Expr)`|<Expr expr>|`, Scope scp, Collect col) { resolve(lhs,scp,col); resolve(rhs,scp,col);}
+
 //
 //syntax Expr
 //  = count:      "count" "(" Expr ")"

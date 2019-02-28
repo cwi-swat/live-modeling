@@ -25,7 +25,7 @@ input {
     RuntimeState r_o
 		  state = o	
 		  startTime = 0		
-		  runningMachines = []
+		  runningNestedMachines = []
   new static
   	Machine blah
   		states = o, two

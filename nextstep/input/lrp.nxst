@@ -9,9 +9,9 @@ static {
 	
 	class State {
 		nested: Machine*
-		onentry: Action		// another way to model inheritance: have separate relations for subtypes
-		running: Action
-		onexit: Action		
+		onentry: Action*		// another way to model inheritance: have separate relations for subtypes
+		running: Action*
+		onexit: Action*		
 	}
 
 	class Variable {}
@@ -125,14 +125,14 @@ runtime {
 	class RuntimeState {	// [vs lrp source code] extension of the State class
 		state: State		
 		startTime: int		
-		runningMachines: RuntimeMachine*		// nested machines
+		runningNestedMachines: RuntimeMachine*		// nested machines
 		
 		invariants {
 			// timer is started
 			startTime > 0 && startTime <= Runtime.timeNow
 			
 			// structurally consistent with the static part
-			forall m: runningMachines | m.machine in state.nested
+			forall m: runningNestedMachines | m.machine in state.nested
 			
 			
 		}
@@ -153,9 +153,10 @@ migration {
 	// if a current state has been removed (--> CLOSURE!)
 	// not old[Runtime.current] in new[Runtime.machine.states] => (new[Runtime.current] = new[Runtime.machine.initial])
 	
-	// if certain variables have changed we need to update (reexecute) actions that depend on them (or at least propose to do so)
+	// if certain variables have changed we need to update (reexecute) actions that depend on them (or at least propose to do so) (--> CLOSURE!)
 	forall v: (new[Runtime.machine.variables] -- old[Runtime.machine.variables]) ++ (old[Runtime.machine.variables] -- new[Runtime.machine.variables]) |
 		(exists a: Action | v in a.scope) => a in new[Runtime.cashe.action]
 
 	// if the current state is different from the previous one then we need to execute all necessary actions (exit, entry, stop/start nested machines)
+	// (--> CLOSURE!)
 }

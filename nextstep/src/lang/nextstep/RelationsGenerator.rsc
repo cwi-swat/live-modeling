@@ -76,6 +76,14 @@ bool findMultiplicity(set[NXBounds] runtime, str binRel) = isSet when bounds(Nar
 
 // Generate NXRelations and NXBounds for the new run-time model
 set[NXBounds] generateNX4NewRuntime(set[NXBounds] oldRuntime, set[NXBounds] oldStatic, set[NXBounds] newStatic) {  
+  
+  //println("   debug (binary) input");
+  //println( {"<r>"| bounds(NaryRelation(str r, Class domain, RangeType range, bool isSet), _) <- oldRuntime} );
+  ////println( {"<c.name >"| bounds(UnaryRelation(Class c),  _) <- oldRuntime} );
+  //println("   debug (unary static) input");
+  //println( {"<c.name >"| bounds(UnaryRelation(Class c),  _) <- oldStatic + newStatic} );
+  //println();
+  
   // General idea
   // 1) All classes defined in the runtime, add n (n = 2) extra atoms to the list 
   // 2) All fields in runtime of types defined in the static parts (both old and new) calculate the 'absolute' atoms that are assigned to this type
@@ -97,16 +105,20 @@ set[NXBounds] generateNX4NewRuntime(set[NXBounds] oldRuntime, set[NXBounds] oldS
   map[str, tuple[Class,Class]] classLookup = (fieldName : <dom,range> | bounds(NaryRelation(str fieldName, Class dom, class(Class range), bool isSet), _) <- oldRuntime);
   
   // debug: problem is between here and below 26.02.2019
-  println("   debug 0");
-  println([b | b <- domain(classLookup)]);
+  //println("   debug 0");
+  ////println([b | b <- domain(classLookup)]);
+  //println(["<f>: <d.name> - <r.name>" | f <- classLookup, <Class d, Class r> := classLookup[f]]);
+  //println(["<c.name>" | <Class c, _> <- newRuntimeUnaries + absoluteStaticTups]);
+  //println();
+  
   
   set[NXTuple] lookup(Class c) = (newRuntimeUnaries + absoluteStaticTups)[c];
   
   rel[str, NXTuple] newRuntimeBinaries = {<fieldName, binary(d,r)> | str fieldName <- classLookup, <Class dom, Class range> := classLookup[fieldName], single(NXAtom d) <- lookup(dom), single(NXAtom r) <- lookup(range)};
    
   // debug: problem shows up here 26.02.2019
-  println("   debug 1");
-  println([b<0> | b <- newRuntimeBinaries]);   
+  //println("   debug 1");
+  //println([b<0> | b <- newRuntimeBinaries]);   
    
   // Now do the integer fields:
   rel[str, NXTuple] newRuntimeBinaryIntFields = {<fieldName, binary(d,intHole())> | bounds(NaryRelation(str fieldName, Class dom, intType(), _), _) <- oldRuntime, single(NXAtom d) <- lookup(dom)}; 

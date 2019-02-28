@@ -54,6 +54,10 @@ Models extract(Spec spc, ResolvedTypes res, NextepInstance inst) {
   
   // Extract (generic) relations
   list[NXRelation] rels = extractRelations(spc, res);
+  
+  println("   debug generic part");
+  println([ "<c.name>"| UnaryRelation(Class c) <- rels]);
+  println();
 
   map[str, NXRelation] relDefs = ("<c.name>" : r | r: UnaryRelation(Class c) <- rels)
                                + (name : r       | r: NaryRelation(str name, _, _, _) <- rels);
@@ -62,8 +66,6 @@ Models extract(Spec spc, ResolvedTypes res, NextepInstance inst) {
   Models result = (oldStatic():  extractBounds({objd | ObjectDef objd <- inst.oldStat}, relDefs)) +
                   (newStatic():  extractBounds({objd | ObjectDef objd <- inst.newStat}, relDefs)) +
                   (oldRuntime(): extractBounds({objd | ObjectDef objd <- inst.oldRun}, relDefs));
-  
-  //println(result);
   
   return result;
 }
@@ -80,7 +82,7 @@ set[NXBounds] extractBounds(set[ObjectDef] objDefs, map[str, NXRelation] rels) {
                       + {single(strAt("<a>")) | (ObjectDef)`<Type tp> <{Atom ","}* objs>` <- objDefs, "<tp>" == relName, a <- objs};
     
     bnds += bounds(rels[relName], tpls);
-  }
+  } 
   
   // extract bounds for (bi)nary relations from the fields instatiation
   set[str] declaredBins = {"<tp>_<fld.fieldName>" | (ObjectDef)`<Type tp> <Atom _> <FieldInstantiation+ flds>` <- objDefs, 
@@ -93,7 +95,10 @@ set[NXBounds] extractBounds(set[ObjectDef] objDefs, map[str, NXRelation] rels) {
                           "<tp>_<fld.fieldName>" == relName, b <- fld.atoms};
     
     bnds += bounds(rels[relName], tpls);
-  }                                 
+  }
+  
+  // add relations without object or field definitions (without instances): with an empty set of bounds
+  bnds += {bounds(rels[relName], {}) | relName <- rels, relName notin (declaredRels + declaredBins)};                              
   
   return bnds;
 }
