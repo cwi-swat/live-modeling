@@ -91,7 +91,7 @@ runtime {
 			forall t : triggeredTransition | t.to = currentState
 			 
 			// if the machine has been just started, then it should be in its initial state
-			(exists a: Runtime.cashe.action, sp: SpawnAction | 			// checking subtype
+			(exists a: Runtime.cache.action, sp: SpawnAction | 			// checking subtype
 				sp.action = a && sp.machine = machine) => (currentState.state = machine.initial)
 			
 			// semantics of timeout transitions
@@ -102,7 +102,7 @@ runtime {
 				
 			// semantics of a transition triggered by an event
 			forall t: NormalTransition ++ WildCardTransition |			// subtype check
-				t.trans in triggeredTransition => t.onevent.action in Runtime.cashe.action
+				t.trans in triggeredTransition => t.onevent.action in Runtime.cache.action
 			
 			// semantics of an epsilon transition: if there an epsilon transition from the current state, then we cannot stay in this state
 			// (i.e. we have just changed the state)
@@ -110,15 +110,15 @@ runtime {
 				currentState.state = t.trans.from) => one triggeredTransition
 			
 			// if no transition was triggered then the state runing action was executed
-			no triggeredTransition <=> (currentState.state.running in Runtime.cashe.action ||
-									(currentState.state = machine.initial && currentState.state.onentry in Runtime.cashe.action))
+			no triggeredTransition <=> (currentState.state.running in Runtime.cache.action ||
+									(currentState.state = machine.initial && currentState.state.onentry in Runtime.cache.action))
 			
 			// if a transition was triggered then an exit and an entry action were executed
-			one triggeredTransition <=> (exists t: triggeredTransition | t.from.onexit in Runtime.cashe.action) 
-										&& (currentState.state.onentry in Runtime.cashe.action) 
+			one triggeredTransition <=> (exists t: triggeredTransition | t.from.onexit in Runtime.cache.action) 
+										&& (currentState.state.onentry in Runtime.cache.action) 
 			
 			// a variable can be changed by executing an ection
-			forall v: changedValues | (exists a: Runtime.cashe.action | v in a.scope)								
+			forall v: changedValues | (exists a: Runtime.cache.action | v in a.scope)								
 		}
 	}
 	
@@ -155,7 +155,7 @@ migration {
 	
 	// if certain variables have changed we need to update (reexecute) actions that depend on them (or at least propose to do so) (--> CLOSURE!)
 	forall v: (new[Runtime.machine.variables] -- old[Runtime.machine.variables]) ++ (old[Runtime.machine.variables] -- new[Runtime.machine.variables]) |
-		(exists a: Action | v in a.scope) => a in new[Runtime.cashe.action]
+		(exists a: Action | v in a.scope) => a in new[Runtime.cache.action]
 
 	// if the current state is different from the previous one then we need to execute all necessary actions (exit, entry, stop/start nested machines)
 	// (--> CLOSURE!)
