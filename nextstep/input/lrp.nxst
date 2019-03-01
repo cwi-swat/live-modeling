@@ -25,8 +25,8 @@ static {
 	}
 	
 	class SpawnAction {		// some actions are meant to start execution of a nested machine
-		action: Action
-		machine: Machine
+		spaction: Action
+		spmachine: Machine
 	}
 	
 	class Transition {
@@ -35,23 +35,23 @@ static {
 	}
 	
 	class NormalTransition {
-		trans: Transition	// this is how we model a subset/subclass of Transition
+		ntrans: Transition	// this is how we model a subset/subclass of Transition
 		onevent: Event
 	}
 	
 	class EpsilonTransition {
-		trans: Transition	// subclass of Transition
+		etrans: Transition	// subclass of Transition
 	}
 	
 	class TimeoutTransition {
-		trans: Transition 	// subclass of Transition
+		ttrans: Transition 	// subclass of Transition
 		maxtime: int		// how to model that the maxtime can be a reference to a variable??????
 	} 
 	
 	class WildCardTransition {
-		trans: Transition 	// subclass of Transition (or subclass of NormalTransition)
-		from : State*		// overriding of a field
-		onevent: Event
+		wtrans: Transition 	// subclass of Transition (or subclass of NormalTransition)
+		wfrom : State*		// overriding of a field
+		wonevent: Event
 	}
 	
 	
@@ -73,16 +73,16 @@ runtime {
 	}
 
 	class RuntimeMachine {	// [vs lrp source code] extension of the Machine class
-		machine: Machine	
+		rmachine: Machine	
 		currentState: RuntimeState
 		triggeredTransition: Transition*
 		changedValues: Variable*		
 		
 		invariants {
 			// structurally consistent with the static part
-			currentState.state in machine.states
-			forall t : triggeredTransition | t in machine.transitions
-			forall v: changedValues | v in machine.variables
+			currentState.rstate in rmachine.states
+			forall t: triggeredTransition | t in rmachine.transitions
+			forall v: changedValues | v in rmachine.variables
 			
 			// one or no triggered transition [0..1]
 			one triggeredTransition || no triggeredTransition		
@@ -91,39 +91,41 @@ runtime {
 			forall t : triggeredTransition | t.to = currentState
 			 
 			// if the machine has been just started, then it should be in its initial state
-			(exists a: Runtime.cache.action, sp: SpawnAction | 			// checking subtype
-				sp.action = a && sp.machine = machine) => (currentState.state = machine.initial)
+			(exists a: Runtime.cache.caction, sp: SpawnAction | 			// checking subtype
+				sp.spaction = a && sp.spmachine = rmachine) => (currentState.rstate = rmachine.initState)
 			
 			// semantics of timeout transitions
-			forall t: machine.transitions, tt: TimeoutTransition | 		// checking subtype
-				(tt.transition = t && t.from = currentState.state) => 
+			forall t: rmachine.transitions, tt: TimeoutTransition | 		// checking subtype
+				(tt.ttrans = t && t.from = currentState.rstate) => 
 				(Runtime.timeNow <= (tt.maxtime) + (currentState.startTime))
 				
 				
-			// semantics of a transition triggered by an event
-			forall t: NormalTransition ++ WildCardTransition |			// subtype check
-				t.trans in triggeredTransition => t.onevent.action in Runtime.cache.action
+			// semantics of a transition triggered by an event (including a wildcard transition)
+			forall t: NormalTransition |			// subtype check
+				t.ntrans in triggeredTransition => t.onevent.action in Runtime.cache.caction
+			forall t: WildCardTransition |      // subtype check
+        t.wtrans in triggeredTransition => t.wonevent.action in Runtime.cache.caction
 			
 			// semantics of an epsilon transition: if there an epsilon transition from the current state, then we cannot stay in this state
 			// (i.e. we have just changed the state)
 			(exists t: EpsilonTransition | 								// subtype check
-				currentState.state = t.trans.from) => one triggeredTransition
+				currentState.rstate = t.etrans.from) => one triggeredTransition
 			
 			// if no transition was triggered then the state runing action was executed
-			no triggeredTransition <=> (currentState.state.running in Runtime.cache.action ||
-									(currentState.state = machine.initial && currentState.state.onentry in Runtime.cache.action))
+			no triggeredTransition <=> (currentState.rstate.running in Runtime.cache.caction ||
+									(currentState.rstate = rmachine.initial && currentState.rstate.onentry in Runtime.cache.caction))
 			
 			// if a transition was triggered then an exit and an entry action were executed
-			one triggeredTransition <=> (exists t: triggeredTransition | t.from.onexit in Runtime.cache.action) 
-										&& (currentState.state.onentry in Runtime.cache.action) 
+			one triggeredTransition <=> (exists t: triggeredTransition | t.from.onexit in Runtime.cache.caction) 
+										&& (currentState.rstate.onentry in Runtime.cache.caction) 
 			
 			// a variable can be changed by executing an ection
-			forall v: changedValues | (exists a: Runtime.cache.action | v in a.scope)								
+			forall v: changedValues | (exists a: Runtime.cache.caction | v in a.scope)								
 		}
 	}
 	
 	class RuntimeState {	// [vs lrp source code] extension of the State class
-		state: State		
+		rstate: State		
 		startTime: int		
 		runningNestedMachines: RuntimeMachine*		// nested machines
 		
@@ -132,14 +134,14 @@ runtime {
 			startTime > 0 && startTime <= Runtime.timeNow
 			
 			// structurally consistent with the static part
-			forall m: runningNestedMachines | m.machine in state.nested
+			forall m: runningNestedMachines | m.rmachine in rstate.nested
 			
 			
 		}
 	}
 	
 	class CachedAction {
-		action: Action
+		caction: Action
 		index: int
 		invariant: index > 0
 	}
@@ -154,8 +156,8 @@ migration {
 	// not old[Runtime.current] in new[Runtime.machine.states] => (new[Runtime.current] = new[Runtime.machine.initial])
 	
 	// if certain variables have changed we need to update (reexecute) actions that depend on them (or at least propose to do so) (--> CLOSURE!)
-	forall v: (new[Runtime.machine.variables] -- old[Runtime.machine.variables]) ++ (old[Runtime.machine.variables] -- new[Runtime.machine.variables]) |
-		(exists a: Action | v in a.scope) => a in new[Runtime.cache.action]
+	forall v: (new[Runtime.rmachine.variables] -- old[Runtime.rmachine.variables]) ++ (old[Runtime.rmachine.variables] -- new[Runtime.rmachine.variables]) |
+		(exists a: Action | v in a.scope) => a in new[Runtime.cache.caction]
 
 	// if the current state is different from the previous one then we need to execute all necessary actions (exit, entry, stop/start nested machines)
 	// (--> CLOSURE!)

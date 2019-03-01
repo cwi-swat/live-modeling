@@ -19,23 +19,23 @@ input {
     Event _
       action = []
     SpawnAction _
-      action = []
-      machine = []
+      spaction = []
+      spmachine = []
     Transition _
       from = []
       to = []
     NormalTransition _
-      trans = []
+      ntrans = []
       onevent = []
     EpsilonTransition _
-      trans = []
+      etrans = []
     TimeoutTransition _
-      trans = []
+      ttrans = []
       maxtime = []
     WildCardTransition _
-      trans = []
-      from = []
-      onevent = []
+      wtrans = []
+      wfrom = []
+      wonevent = []
       
   old runtime
   	Runtime x
@@ -43,16 +43,16 @@ input {
 		  runningMachines = rblah
 		  cache = []
 	  RuntimeMachine rblah
-		  machine = blah	
+		  rmachine = blah	
 		  currentState = ro
 		  triggeredTransition = []
 		  changedValues = []
     RuntimeState ro
-		  state = o	
+		  rstate = o	
 		  startTime = 0		
 		  runningNestedMachines = []
 		CachedAction _
-		  action = []
+		  caction = []
 		  index = []	  
 		  
   new static
@@ -76,7 +76,7 @@ input {
   		from = o
   		to = two
   	EpsilonTransition et1
-  		trans = t1
+  		etrans = t1
   		
     Variable _
     Action _
@@ -84,16 +84,16 @@ input {
     Event _
       action = []
     SpawnAction _
-      action = []
-      machine = []
+      spaction = []
+      spmachine = []
     NormalTransition _
-      trans = []
+      ntrans = []
       onevent = []
     TimeoutTransition _
-      trans = []
+      ttrans = []
       maxtime = []
     WildCardTransition _
-      trans = []
-      from = []
-      onevent = []
+      wtrans = []
+      wfrom = []
+      wonevent = []
 }
