@@ -95,9 +95,9 @@ runtime {
 				sp.spaction = a && sp.spmachine = rmachine) => (currentState.rstate = rmachine.initState)
 			
 			// semantics of timeout transitions
-			//forall t: rmachine.transitions, tt: TimeoutTransition | 		// checking subtype
-			//	(tt.ttrans = t && t.from = currentState.rstate) => 
-			//	(Runtime.timeNow <= (tt.maxtime) + (currentState.startTime))
+			forall t: rmachine.transitions, tt: TimeoutTransition | 		// checking subtype
+				(tt.ttrans = t && t.from = currentState.rstate) => 
+				(Runtime.timeNow <= (tt.maxtime) + (currentState.startTime))
 				
 				
 			// semantics of a transition triggered by an event (including a wildcard transition)
@@ -150,15 +150,15 @@ runtime {
 
 migration {
 	// time rule
-	//new[Runtime.timeNow] >= old[Runtime.timeNow] && new[Runtime.timeNow] <= old[Runtime.timeNow] + 1
+	new[Runtime.timeNow] >= old[Runtime.timeNow] && new[Runtime.timeNow] <= old[Runtime.timeNow] + 1
 	
 	// if a current state has been removed (--> CLOSURE!)
 	// not old[Runtime.current] in new[Runtime.machine.states] => (new[Runtime.current] = new[Runtime.machine.initial])
 	
 	// if certain variables have changed we need to update (reexecute) actions that depend on them (or at least propose to do so) (--> CLOSURE!)
-	//forall v: (new[Runtime.runningMachines.changedValues] -- old[Runtime.runningMachines.changedValues]) 
-	//       ++ (old[Runtime.runningMachines.changedValues] -- new[Runtime.runningMachines.changedValues]) |
-	//	(exists a: Action | v in a.scope) => a in new[Runtime.cache.caction]
+	forall v: (new[Runtime.runningMachines.changedValues] -- old[Runtime.runningMachines.changedValues]) 
+	       ++ (old[Runtime.runningMachines.changedValues] -- new[Runtime.runningMachines.changedValues]) |
+		(exists a: Action | v in a.scope) => a in new[Runtime.cache.caction]
 
 	// if the current state is different from the previous one then we need to execute all necessary actions (exit, entry, stop/start nested machines)
 	// (--> CLOSURE!)
