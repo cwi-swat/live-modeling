@@ -13,16 +13,29 @@ input {
 		  running = []
 		  onexit = []
 		
-		Variable;
-    Action;
-    Event;
-    SpawnAction;
-    Transition;
-    NormalTransition;
-    EpsilonTransition;
-    TimeoutTransition;
-    WildCardTransition;
-      
+		Variable _
+    Action _
+      scope = []
+    Event _
+      action = []
+    SpawnAction _
+      action = []
+      machine = []
+    Transition _
+      from = []
+      to = []
+    NormalTransition _
+      trans = []
+      onevent = []
+    EpsilonTransition _
+      trans = []
+    TimeoutTransition _
+      trans = []
+      maxtime = []
+    WildCardTransition _
+      trans = []
+      from = []
+      onevent = []
       
   old runtime
   	Runtime x
@@ -38,7 +51,9 @@ input {
 		  state = o	
 		  startTime = 0		
 		  runningNestedMachines = []
-		CachedAction;	  
+		CachedAction _
+		  action = []
+		  index = []	  
 		  
   new static
   	Machine blah
@@ -63,11 +78,22 @@ input {
   	EpsilonTransition et1
   		trans = t1
   		
-    Variable;
-    Action;
-    Event;    
-    SpawnAction;    
-    NormalTransition;    
-    TimeoutTransition;
-    WildCardTransition;  		
+    Variable _
+    Action _
+      scope = []
+    Event _
+      action = []
+    SpawnAction _
+      action = []
+      machine = []
+    NormalTransition _
+      trans = []
+      onevent = []
+    TimeoutTransition _
+      trans = []
+      maxtime = []
+    WildCardTransition _
+      trans = []
+      from = []
+      onevent = []
 }

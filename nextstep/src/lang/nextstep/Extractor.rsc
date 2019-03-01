@@ -73,20 +73,24 @@ Models extract(Spec spc, ResolvedTypes res, NextepInstance inst) {
 set[NXBounds] extractBounds(set[ObjectDef] objDefs, map[str, NXRelation] rels) {
   set[NXBounds] bnds = {};
   
-  // extract bounds for unary relations from objects definitions (including those without fields)
+  // extract bounds for unary relations from objects definitions (including empty and those without fields)
   set[str] declaredRels = {"<tp>" | (ObjectDef)`<Type tp> <Atom _> <FieldInstantiation+ _>` <- objDefs}
-                        + {"<tp>" | (ObjectDef)`<Type tp> <{Atom ","}* _>;` <- objDefs};
+                        + {"<tp>" | (ObjectDef)`<Type tp> <{Atom ","}* _>` <- objDefs}
+                        + {"<tp>" | (ObjectDef)`<Type tp> _` <- objDefs}
+                        + {"<tp>" | (ObjectDef)`<Type tp> _ <FieldInstantiation+ _>` <- objDefs};
   
   for (str relName <- declaredRels, UnaryRelation(_) := rels[relName]) {
     set[NXTuple] tpls = {single(strAt("<a>")) | (ObjectDef)`<Type tp> <Atom a> <FieldInstantiation+ _>` <- objDefs, "<tp>" == relName}
-                      + {single(strAt("<a>")) | (ObjectDef)`<Type tp> <{Atom ","}* objs>;` <- objDefs, "<tp>" == relName, a <- objs};
+                      + {single(strAt("<a>")) | (ObjectDef)`<Type tp> <{Atom ","}* objs>` <- objDefs, "<tp>" == relName, a <- objs};
     
     bnds += bounds(rels[relName], tpls);
   } 
   
   // extract bounds for (bi)nary relations from the fields instatiation
   set[str] declaredBins = {"<tp>_<fld.fieldName>" | (ObjectDef)`<Type tp> <Atom _> <FieldInstantiation+ flds>` <- objDefs, 
-                                                fld <- flds};
+                                                     fld <- flds}
+                        + {"<tp>_<fld.fieldName>" | (ObjectDef)`<Type tp> _ <FieldInstantiation+ flds>` <- objDefs, 
+                                                     fld <- flds};
   println(rels<0>);
   for (str relName <- declaredBins) {//, NaryRelation(_) := rels[relName]) {
     set[NXTuple] tpls = {binary(strAt("<a>"), extractAtom(b)) | 
