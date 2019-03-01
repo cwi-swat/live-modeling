@@ -14,6 +14,7 @@ import translation::theories::integer::AST; // AlleAlle
 import String;
 import IO;
 import Map;
+import Set;
 
 alias NX2AlleMapping = rel[NXRelation nx, RelationDef alle, Model model];
 
@@ -26,8 +27,8 @@ NX2AlleMapping generateAlleRelations (Models models)
   = {<r, genFixedBoundsRel(r, t, "po"), oldStatic()> | bounds(r, t) <- models[oldStatic()]}
   + {<r, genFixedBoundsRel(r, t, "pn"), newStatic()> | bounds(r, t) <- models[newStatic()]}
   + {<r, genFixedBoundsRel(r, t, "xo"), oldRuntime()> | bounds(r, t) <- models[oldRuntime()]}
-  + {<r, genUpperBoundsRel(r, t, "xn"), newRuntime()> | bounds(r, t) <- models[newRuntime()], !(UnaryRelation(Class c) := r && "<c.name>" == "Runtime")}
-  + {<r, genFixedBoundsRel(r, t, "xn"), newRuntime()> | bounds(r, t) <- models[newRuntime()], (UnaryRelation(Class c) := r && "<c.name>" == "Runtime")}
+  + {<r, genUpperBoundsRel(r, t, "xn"), newRuntime()> | bounds(r, t) <- models[newRuntime()], !(UnaryRelation(Class c) := r && "<c.name>" == "Runtime"), size(t) > 0}
+  + {<r, genFixedBoundsRel(r, t, "xn"), newRuntime()> | bounds(r, t) <- models[newRuntime()], (UnaryRelation(Class c) := r && "<c.name>" == "Runtime" || size(t) == 0)}
   + {<r, genDistanceRel(r, t, "d"), distance()> | bounds(r, t) <- models[distance()]};
 
 // Unary relation
@@ -40,7 +41,12 @@ RelationDef genUpperBoundsRel (UnaryRelation(Class c), set[NXTuple] nxtuples, st
               atMost([tup([nxAtom2alle(a)]) | single(NXAtom a) <- nxtuples]));
 
 RelationDef genDistanceRel (r:UnaryRelation(Class c), set[NXTuple] nxtuples, str prefix) 
-  = genUpperBoundsRel(r, nxtuples, prefix);
+  = genUpperBoundsRel(r, nxtuples, prefix)
+    when size(nxtuples) > 0;
+
+RelationDef genDistanceRel (r:UnaryRelation(Class c), set[NXTuple] nxtuples, str prefix) 
+  = genFixedBoundsRel(r, nxtuples, prefix)
+    when size(nxtuples) == 0;
               
 // Nary relation
 RelationDef genFixedBoundsRel (NaryRelation(str relName, Class dom, RangeType ran, bool isSet), set[NXTuple] nxtuples, str prefix) 
@@ -51,12 +57,25 @@ RelationDef genUpperBoundsRel (NaryRelation(str relName, Class dom, RangeType ra
   = relation ("<prefix>_<relName>", [nxType2alleHeader(dom), nxType2alleHeader(ran)], 
                atMost([ tup([nxAtom2alle(t.a), nxAtom2alle(t.b)]) | t <- nxtuples ]));
 
+// Distance as a set difference
 RelationDef genDistanceRel (r: NaryRelation(str _, Class _, class(Class _), bool _), set[NXTuple] nxtuples, str prefix) 
-  = genUpperBoundsRel(r, nxtuples, prefix);
+  = genUpperBoundsRel(r, nxtuples, prefix)
+    when size(nxtuples) > 0;
 
+RelationDef genDistanceRel (r: NaryRelation(str _, Class _, class(Class _), bool _), set[NXTuple] nxtuples, str prefix) 
+  = genFixedBoundsRel(r, nxtuples, prefix)
+    when size(nxtuples) == 0;
+
+// Distance as a vectors delta
 RelationDef genDistanceRel (NaryRelation(str relName, Class dom, intType(), bool _), set[NXTuple] tups, str prefix) 
   = relation ("<prefix>_<relName>", [nxType2alleHeader(dom), header("delta", intDom())], 
-               atMost([ tup([nxAtom2alle(t.a), nxAtom2alle(t.b)]) | t <- tups ]));
+               atMost([ tup([nxAtom2alle(t.a), nxAtom2alle(t.b)]) | t <- tups ]))
+    when size(tups) > 0;
+    
+RelationDef genDistanceRel (NaryRelation(str relName, Class dom, intType(), bool _), set[NXTuple] tups, str prefix) 
+  = relation ("<prefix>_<relName>", [nxType2alleHeader(dom), header("delta", intDom())], exact([]))
+    when size(tups) == 0;
+    
 
 HeaderAttribute nxType2alleHeader (Class c)        = header("<c.name>Id", id());
 HeaderAttribute nxType2alleHeader (class(Class c)) = header("<c.name>Id", id());

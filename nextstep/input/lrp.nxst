@@ -88,7 +88,7 @@ runtime {
 			one triggeredTransition || no triggeredTransition		
 			
 			// triggered transition leads to the current state
-			forall t : triggeredTransition | t.to = currentState
+			forall t : triggeredTransition | t.to = currentState.rstate
 			 
 			// if the machine has been just started, then it should be in its initial state
 			(exists a: Runtime.cache.caction, sp: SpawnAction | 			// checking subtype
