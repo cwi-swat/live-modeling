@@ -213,25 +213,25 @@ AlleExpr buildProduct(list[AlleExpr] operands)
 ArithmExpr translateArithmeticExpr((Expr)`<Expr lhs> + <Expr rhs>`) {
 	l = translateArithmeticExpr(lhs);
 	r = translateArithmeticExpr(rhs);
-	return arithmExpr(l.renaming + r.renaming, add(l.alleExpr, r.alleExpr));
+	return arithmExpr(l.renaming + r.renaming, addition([l.alleExpr, r.alleExpr]));
 }
 
 ArithmExpr translateArithmeticExpr((Expr)`<Expr lhs> - <Expr rhs>`) {
 	l = translateArithmeticExpr(lhs);
 	r = translateArithmeticExpr(rhs);
-	return arithmExpr(l.renaming + r.renaming, sub(l.alleExpr, r.alleExpr));
+	return arithmExpr(l.renaming + r.renaming, subtraction(l.alleExpr, r.alleExpr));
 }
 
 ArithmExpr translateArithmeticExpr((Expr)`<Expr lhs> * <Expr rhs>`) {
 	l = translateArithmeticExpr(lhs);
 	r = translateArithmeticExpr(rhs);
-	return arithmExpr(l.renaming + r.renaming, mult(l.alleExpr, r.alleExpr));
+	return arithmExpr(l.renaming + r.renaming, multiplication([l.alleExpr, r.alleExpr]));
 }
 
 ArithmExpr translateArithmeticExpr((Expr)`<Expr lhs> \\ <Expr rhs>`) {
 	l = translateArithmeticExpr(lhs);
 	r = translateArithmeticExpr(rhs);
-	return arithmExpr(l.renaming + r.renaming, div(l.alleExpr, r.alleExpr));
+	return arithmExpr(l.renaming + r.renaming, division(l.alleExpr, r.alleExpr));
 }
 
 ArithmExpr translateArithmeticExpr((Expr)`| <Expr ex> |`) {

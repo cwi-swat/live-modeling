@@ -134,9 +134,7 @@ runtime {
 			startTime > 0 && startTime <= Runtime.timeNow
 			
 			// structurally consistent with the static part
-			forall m: runningNestedMachines | m.rmachine in rstate.nested
-			
-			
+			forall m: runningNestedMachines | m.rmachine in rstate.nested			
 		}
 	}
 	
@@ -153,13 +151,17 @@ migration {
 	new[Runtime.timeNow] >= old[Runtime.timeNow] && new[Runtime.timeNow] <= old[Runtime.timeNow] + 1
 	
 	// if a current state has been removed (--> CLOSURE!)
-	// not old[Runtime.current] in new[Runtime.machine.states] => (new[Runtime.current] = new[Runtime.machine.initial])
+	//forall m1: new[*Runtime.runningMachines], m2: old[*Runtime.runningMachines] | (m1.rmachine = m2.rmachine) && 
+	//   not m1.currentState.rstate in m2.rmachine.states => m1.currentState.rstate = m1.rmachine.initState
 	
 	// if certain variables have changed we need to update (reexecute) actions that depend on them (or at least propose to do so) (--> CLOSURE!)
-	forall v: (new[Runtime.runningMachines.changedValues] -- old[Runtime.runningMachines.changedValues]) 
-	       ++ (old[Runtime.runningMachines.changedValues] -- new[Runtime.runningMachines.changedValues]) |
-		(exists a: Action | v in a.scope) => a in new[Runtime.cache.caction]
+	//forall m1: new[*Runtime.runningMachines], m2: old[*Runtime.runningMachines] | (m1.rmachine = m2.rmachine) &&
+	// (forall v: (m1.changedValues -- m2.changedValues) ++ (m2.changedValues -- m1.changedValues) |
+	//   (exists a: Action | v in a.scope) => a in new[Runtime.cache.caction])
 
-	// if the current state is different from the previous one then we need to execute all necessary actions (exit, entry, stop/start nested machines)
-	// (--> CLOSURE!)
+	// if the current state is different from the previous one then we need to execute all necessary actions (exit, entry, stop/start nested machines) (--> CLOSURE!)
+	//forall m1: new[*Runtime.runningMachines], m2: old[*Runtime.runningMachines] |  
+	//   ((m1.rmachine = m2.rmachine) && not (m1.currentState = m2.currentState)) => 
+	//   ((m1.currentState.rstate.onentry in new[Runtime.cache.caction]) && (m2.currentState.rstate.onexit in new[Runtime.cache.caction]))
 }
+
