@@ -107,27 +107,42 @@ set[NXBounds] generateNX4NewRuntime(set[NXBounds] oldRuntime, set[NXBounds] oldS
       
   // Step 1: Calculate the bounds of the new runtime unary relations (the defined classes)
   int n = 2; // extra atoms per defined class in the runtime
-  rel[Class, NXTuple] newRuntimeUnaries = oldRuntimeTups + {<c, single(strAt(toLowerCase("<c.name>_new_<i+1>")))> |   // TODO: test that this expr also adds atoms to the runtime classes that were empty in the old state 
+  rel[Class, NXTuple] newRuntimeUnaries = oldRuntimeTups + {<c, single(strAt(toLowerCase("<c.name>_new_<i+1>")))> |   
                                                              bounds(UnaryRelation(Class c), _) <- oldRuntime, "<c.name>" != "Runtime", int i <- [0..n]}; 
    
   // Step 2: Calculate the bounds of the new runtime binary relations (the defined fiels)
   // The new bounds are the cartesian product of the bounds of the underlying unary relations
   
   // First do the classes:
-  map[str, tuple[Class,Class]] classLookup = (fieldName : <dom,range> | bounds(NaryRelation(str fieldName, Class dom, class(Class range), bool isSet), _) <- oldRuntime);
+  map[str, tuple[Class,Class]] classLookup = (fieldName : <dom,range> | bounds(NaryRelation(str fieldName, Class dom, class(Class range), bool isSet), _) <- oldRuntime);  
     
   set[NXTuple] lookup(Class c) = (newRuntimeUnaries + absoluteStaticTups)[c];
   // construct the cartesian product: binary(d,r)
-  rel[str, NXTuple] newRuntimeBinaries = {<fieldName, binary(d,r)> | str fieldName <- classLookup, <Class dom, Class range> := classLookup[fieldName], single(NXAtom d) <- lookup(dom), single(NXAtom r) <- lookup(range)};
+  rel[str, NXTuple] newRuntimeBinaries = {<fieldName, binary(d,r)> | str fieldName <- classLookup, <Class dom, Class range> := classLookup[fieldName], 
+                                                                      single(NXAtom d) <- lookup(dom), single(NXAtom r) <- lookup(range)};
      
   // Now do the integer fields:
-  rel[str, NXTuple] newRuntimeBinaryIntFields = {<fieldName, binary(d,intHole())> | bounds(NaryRelation(str fieldName, Class dom, intType(), _), _) <- oldRuntime, single(NXAtom d) <- lookup(dom)}; 
+  rel[str, NXTuple] newRuntimeBinaryIntFields = {<fieldName, binary(d,intHole())> | bounds(NaryRelation(str fieldName, Class dom, intType(), _), _) <- oldRuntime, 
+                                                                                    single(NXAtom d) <- lookup(dom)}; 
+                                                                                    
+  println("   debug 0");
+  //println([b | b <- domain(classLookup)]);
+  println(["<f>: <d>" | <f, binary(d, _)> <- newRuntimeBinaryIntFields]); // good here
+  println();                                                                                    
+                                                                                    
   
-  // Last step, convert everything to NXBounds and add empty relations (that use empty classes)  
-  set[NXBounds] newRuntime = {bounds(UnaryRelation(c), newRuntimeUnaries[c]) | Class c <- newRuntimeUnaries<0>}
-                           + {bounds(NaryRelation(fieldName, findDomain(oldRuntime, fieldName), findRange(oldRuntime, fieldName), findMultiplicity(oldRuntime, fieldName)), newRuntimeBinaries[fieldName]) | str fieldName <- newRuntimeBinaries<0>}
-                           + {bounds(NaryRelation(fieldName, findDomain(oldRuntime, fieldName), intType(), false), newRuntimeBinaryIntFields[fieldName]) | str fieldName <- newRuntimeBinaryIntFields<0>}
-                           + {bounds(NaryRelation(fieldName, domain, range, isSet), {} )| bounds(NaryRelation(str fieldName, Class domain, RangeType range, bool isSet), {}) <- oldRuntime};
+  // Last step, convert everything to NXBounds
+  set[NXBounds] newRuntime = {bounds(UnaryRelation(c), newRuntimeUnaries[c]) 
+                                          | Class c <- newRuntimeUnaries<0>}
+                           + {bounds(NaryRelation(fieldName, findDomain(oldRuntime, fieldName), findRange(oldRuntime, fieldName), findMultiplicity(oldRuntime, fieldName)), newRuntimeBinaries[fieldName]) 
+                                          | str fieldName <- newRuntimeBinaries<0>}
+                           + {bounds(NaryRelation(fieldName, findDomain(oldRuntime, fieldName), intType(), false), newRuntimeBinaryIntFields[fieldName]) 
+                                          | str fieldName <- newRuntimeBinaryIntFields<0>};
+                           
+  // Add empty relations (that use empty classes) if they haven't been aded yet                            
+  newRuntime = newRuntime + {bounds(NaryRelation(fieldName, domain, range, isSet), {} )
+                                          | bounds(NaryRelation(str fieldName, Class domain, RangeType range, bool isSet), {}) <- oldRuntime,
+                                            !(fieldName in {f | bounds(NaryRelation(str f, _, _, _), _)<- newRuntime}) };
 
   return newRuntime;
 }
