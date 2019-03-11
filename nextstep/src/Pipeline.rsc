@@ -34,6 +34,8 @@ void runAndVisLRP() = runAndVis(parseFile(|project://nextstep/input/lrp.nxst|), 
 void runAndGetNextModelSM() = runNextep(|project://nextstep/input/statemachine.nxst|, |project://nextstep/input/stmInstance1.nxstin|);
 void runAndGetNextModelRoboticArm() = runNextep(|project://nextstep/input/roboticarm.nxst|, |project://nextstep/input/rbaInstance1.nxstin|);
 
+void runAndGetNextModelLRP() = runNextep(|project://nextstep/input/lrp.nxst|, |project://nextstep/input/lrp/lrp_test01.nxstin|);
+
 void runNextep(loc f1, loc f2) {
   // parse and normalize
   Spec spc = parseFile(f1);

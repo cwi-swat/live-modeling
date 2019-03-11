@@ -10,6 +10,7 @@ import translation::SMTInterface;
 import smtlogic::Core;
 
 import lang::nextstep::OutputSyntax;
+import lang::nextstep::Syntax;
 import lang::nextstep::RelationsGenerator;
 import lang::nextstep::Extractor;
 
