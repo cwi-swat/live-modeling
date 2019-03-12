@@ -158,7 +158,7 @@ void resolve((DynamicDef)`runtime { <Class* cs> }`, Scope scp, Collect col) {
   
 void resolve((MigrationDef)`migration { <Formula* rules>}`, Scope scp, Collect col) { 
   for (Formula f <- rules) {
-    resolve(f, scope(new(), col.lookupCls("Runtime"),scp), col);
+    resolve(f, scope(new(), col.lookupCls("Runtime"), scp), col);
   }
 }
 
@@ -201,12 +201,21 @@ default void resolve(Formula f, Scope scp, Collect col) { throw "Unable to resol
 
 private str findType((Expr)`<Expr _>.<Expr rhs>`, Collect col) = findType(rhs,col);
 private str findType(ex:(Expr)`<VarName v>`, Collect col) = col.getType(ex@\loc);
+private str findType(ex:(Expr)`new[<Expr rhs>]`, Collect col) = findType(rhs,col);
+private str findType(ex:(Expr)`old[<Expr rhs>]`, Collect col) = findType(rhs,col);
+
+private str findType((Expr)`(<Expr rhs>)`, Collect col) = findType(rhs,col);
+private str findType((Expr)`<Expr _> ++ <Expr rhs>`, Collect col) = findType(rhs,col);
+private str findType((Expr)`<Expr _> & <Expr rhs>`, Collect col) = findType(rhs,col);
+private str findType((Expr)`<Expr _> -- <Expr rhs>`, Collect col) = findType(rhs,col);
+
 private default str findType(Expr expr, Collect col) { throw "Unable to resolve the type for expression <expr>"; }
 
 private Scope resolveQuantDecl((QuantDecl)`<VarName v>: <Expr expr>`, Scope scp, Collect col) {
   resolve(expr, scp, col);
     
-  str tipe = findType(expr,col);
+  // findType() used to support only '.'-notation and variable names, but no other expressions. Why?
+  str tipe = findType(expr,col);  
   scp.cls.fields += [field("<v>",tipe)];
 
   col.addToEnv("<scp.cls.name>_<v>",scp.stp,<"<v>",col.getHeader(expr@\loc)>);
@@ -318,7 +327,7 @@ void resolve(e:(Expr)`new[<Expr expr>]`, Scope scp, Collect col) {
 }
 
 // UT: update for the arithmetic expressions
-// The header of an arithmetic expression is the same as of its operands(?)
+// The header of an arithmetic expression is the same as of its operands
 void resolve(e: (Expr)`<Expr lhs> \\ <Expr rhs>`, Scope scp, Collect col) { 
   resolve(lhs,scp,col); 
   resolve(rhs,scp,col);

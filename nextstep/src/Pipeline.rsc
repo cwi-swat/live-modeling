@@ -54,7 +54,7 @@ void runAndVis(Spec spc, NextepInstance inst) {
 loc runAndWriteNextModelToFile(Spec spc, NextepInstance inst) {
   OutputDef output = runAndGetNextModel(spc, inst);
   
-  loc outputFile = |project://nextstep/output/<spc@\loc[extension = "nxstout"].file>|;
+  loc outputFile = |project://nextstep/output/<inst@\loc[extension = "nxstout"].file>|;
   writeFile(outputFile, "<output>");
   
   return outputFile;
@@ -63,7 +63,7 @@ loc runAndWriteNextModelToFile(Spec spc, NextepInstance inst) {
 OutputDef runAndGetNextModel(Spec spc, NextepInstance inst) {
   NxtpToAlleTransResult result = translateNxtpToAlle(spc, inst);
   // write AlleAlle file
-  //writeFile(|project://nextstep/output/<spc@\loc[extension = "alle"].file>|, unparse(result.alleProblem));
+  writeFile(|project://nextstep/output/<inst@\loc[extension = "alle"].file>|, unparse(result.alleProblem));
   
   // Run AlleAlle solver and visualize result
   return checkAndGetNextModel(result.alleProblem, result.mapping);
