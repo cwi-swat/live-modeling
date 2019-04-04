@@ -1,0 +1,132 @@
+input {
+  old static
+  	Machine blah
+  		states = s1, s2
+  		initState = s1
+  		variables = v1
+		  events = e1				
+		  transitions = t1, t2
+  	
+  	State s1
+  		nested = []
+		  onentry = []
+		  running = a3
+		  onexit = []
+		
+		State s2
+      nested = []
+      onentry = []
+      running = []
+      onexit = []
+		
+		Transition t1
+      from = s1
+      to = s2
+    NormalTransition nt1
+      ntrans = t1
+      onevent = e1
+      
+    Transition t2
+      from = s2
+      to = s1
+    TimeoutTransition tt2
+      ttrans = t2
+      maxtime = 100    
+    
+    Event e1
+      action = a1
+    
+    Action a1
+      scope = v1
+      
+    Variable v1
+		
+		Action a2
+		  scope = []
+		  
+		Action a3
+      scope = []
+				
+    SpawnAction sa2
+      spaction = a2
+      spmachine = blah
+      
+    EpsilonTransition _
+      etrans = []
+    WildCardTransition _
+      wtrans = []
+      wfrom = []
+      wonevent = []
+      
+  old runtime
+  	Runtime x
+  		timeNow = 1
+		  runningMachines = rblah
+		  cache = ca3
+	  RuntimeMachine rblah
+		  rmachine = blah	
+		  currentState = rs1
+		  triggeredTransition = []
+		  changedValues = []
+    RuntimeState rs1
+		  rstate = s1	
+		  startTime = 0		
+		  runningNestedMachines = []
+		CachedAction ca3
+		  caction = a3
+		  index = 1	  
+		  
+  new static
+    Machine blah
+      states = s2
+      initState = s2
+      variables = v1
+      events = e1       
+      transitions = t1, t2
+    
+    State s2
+      nested = []
+      onentry = []
+      running = []
+      onexit = []
+    
+    Transition t1
+      from = s1
+      to = s2
+    NormalTransition nt1
+      ntrans = t1
+      onevent = e1
+      
+    Transition t2
+      from = s2
+      to = s1
+    TimeoutTransition tt2
+      ttrans = t2
+      maxtime = 100    
+    
+    Event e1
+      action = a1
+    
+    Action a1
+      scope = v1
+      
+    Variable v1
+    
+    Action a2
+      scope = []
+      
+    Action a3
+      scope = []
+        
+    SpawnAction sa2
+      spaction = a2
+      spmachine = blah
+      
+    EpsilonTransition _
+      etrans = []
+    WildCardTransition _
+      wtrans = []
+      wfrom = []
+      wonevent = []
+
+}

@@ -29,12 +29,16 @@ alias NxtpToAlleTransResult = tuple[Problem alleProblem, NX2AlleMapping mapping]
 void runAndVisSM() = runAndVis(parseFile(|project://nextstep/input/statemachine.nxst|), parseInstanceFile(|project://nextstep/input/stmInstance1.nxstin|));
 void runAndVisRBA() = runAndVis(parseFile(|project://nextstep/input/roboticarm.nxst|), parseInstanceFile(|project://nextstep/input/rbaInstance1.nxstin|));
 
-void runAndVisLRP() = runAndVis(parseFile(|project://nextstep/input/lrp.nxst|), parseInstanceFile(|project://nextstep/input/lrp/lrp_test01.nxstin|));
+void runAndVisLRP() = runAndVis(parseFile(|project://nextstep/input/lrp.nxst|), parseInstanceFile(|project://nextstep/input/lrp/lrp_test02.nxstin|));
 
 void runAndGetNextModelSM() = runNextep(|project://nextstep/input/statemachine.nxst|, |project://nextstep/input/stmInstance1.nxstin|);
 void runAndGetNextModelRoboticArm() = runNextep(|project://nextstep/input/roboticarm.nxst|, |project://nextstep/input/rbaInstance1.nxstin|);
 
-void runAndGetNextModelLRP() = runNextep(|project://nextstep/input/lrp.nxst|, |project://nextstep/input/lrp/lrp_test01.nxstin|);
+void runAndGetNextModelLRP() = runNextep(|project://nextstep/input/lrp.nxst|, |project://nextstep/input/lrp/lrp_test02.nxstin|);
+
+void demoLRP1() = runNextep(|project://nextstep/input/lrp.nxst|, |project://nextstep/input/lrp/lrp_demo1.nxstin|);
+void demoLRP2() = runNextep(|project://nextstep/input/lrp.nxst|, |project://nextstep/input/lrp/lrp_demo2.nxstin|);
+void demoLRP3() = runNextep(|project://nextstep/input/lrp.nxst|, |project://nextstep/input/lrp/lrp_demo3.nxstin|);
 
 void runNextep(loc f1, loc f2) {
   // parse and normalize

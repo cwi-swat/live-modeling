@@ -45,7 +45,7 @@ static {
 	
 	class TimeoutTransition {
 		ttrans: Transition 	// subclass of Transition
-		maxtime: int		// how to model that the maxtime can be a reference to a variable??????
+		maxtime: int		// how to model that the maxtime can be a reference to a variable?
 	} 
 	
 	class WildCardTransition {
@@ -53,7 +53,6 @@ static {
 		wfrom : State*		// overriding of a field
 		wonevent: Event
 	}
-	
 	
 }
 
@@ -64,11 +63,15 @@ runtime {
 		timeNow: int
 		runningMachines: RuntimeMachine*		// multiple concurrent (root) machines
 		cache: CachedAction*					//ordered sequence
+		root: Machine*
 		
 		invariants {
 			timeNow > 0
 				
-			// if there are spawn actions in the cache then the corresponding (nested) machines have been started (CLOSURE?!)
+			// one-to-one relation with the nested machines	
+			forall m: root | one (m & runningMachines.rmachine)
+				
+			// if there are spawn actions in the cache then the corresponding (nested) machines have been started
 		}		
 	}
 
@@ -88,7 +91,7 @@ runtime {
 			one triggeredTransition || no triggeredTransition		
 			
 			// triggered transition leads to the current state
-			forall t : triggeredTransition | t.to = currentState.rstate
+			one triggeredTransition => (forall t : triggeredTransition | t.to = currentState.rstate)
 			 
 			// if the machine has been just started, then it should be in its initial state
 			(exists a: Runtime.cache.caction, sp: SpawnAction | 			// checking subtype
@@ -112,12 +115,12 @@ runtime {
 				currentState.rstate = t.etrans.from) => one triggeredTransition
 			
 			// if no transition was triggered then the state runing action was executed
-			no triggeredTransition <=> (currentState.rstate.running in Runtime.cache.caction ||
-									(currentState.rstate = rmachine.initState && currentState.rstate.onentry in Runtime.cache.caction))
+			no triggeredTransition <=> currentState.rstate.running in Runtime.cache.caction 
+									//(currentState.rstate = rmachine.initState && currentState.rstate.onentry in Runtime.cache.caction))
 			
 			// if a transition was triggered then an exit and an entry action were executed
-			one triggeredTransition <=> (exists t: triggeredTransition | t.from.onexit in Runtime.cache.caction) 
-										&& (currentState.rstate.onentry in Runtime.cache.caction) 
+			one triggeredTransition => ((forall t: triggeredTransition | t.from.onexit in Runtime.cache.caction) 
+										                && (currentState.rstate.onentry in Runtime.cache.caction)) 
 			
 			// a variable can be changed by executing an ection
 			forall v: changedValues | (exists a: Runtime.cache.caction | v in a.scope)								
@@ -131,7 +134,10 @@ runtime {
 		
 		invariants {
 			// timer is started
-			startTime > 0 && startTime <= Runtime.timeNow
+			startTime >= 0 && startTime <= Runtime.timeNow
+			
+			// one-to-one relation with the nested machines
+			forall m: rstate.nested | one (m & runningNestedMachines.rmachine)
 			
 			// structurally consistent with the static part
 			forall m: runningNestedMachines | m.rmachine in rstate.nested			

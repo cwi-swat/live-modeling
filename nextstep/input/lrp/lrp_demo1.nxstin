@@ -1,0 +1,100 @@
+input {
+  old static
+    Machine blah
+      states = s1
+      initState = s1
+      variables = []
+      events = []       
+      transitions = []
+    State s1
+      nested = []
+      onentry = []
+      running = []
+      onexit = []
+    
+    Variable _
+    Action _
+      scope = []
+    Event _
+      action = []
+    SpawnAction _
+      spaction = []
+      spmachine = []
+    Transition _
+      from = []
+      to = []
+    NormalTransition _
+      ntrans = []
+      onevent = []
+    EpsilonTransition _
+      etrans = []
+    TimeoutTransition _
+      ttrans = []
+      maxtime = []
+    WildCardTransition _
+      wtrans = []
+      wfrom = []
+      wonevent = []
+      
+  old runtime
+    Runtime x
+      root = blah
+      timeNow = 1
+      runningMachines = rblah
+      cache = []
+    RuntimeMachine rblah
+      rmachine = blah 
+      currentState = rs1
+      triggeredTransition = []
+      changedValues = []
+    RuntimeState rs1
+      rstate = s1  
+      startTime = 0   
+      runningNestedMachines = []
+    CachedAction _
+      caction = []
+      index = []    
+      
+  new static
+    Machine blah
+      states = s1, s2
+      initState = s1
+      transitions = t1
+      variables = []
+      events = []       
+    State s1
+      nested = []
+      onentry = []
+      running = []
+      onexit = []
+    State s2
+      nested = []
+      onentry = []
+      running = a1
+      onexit = []
+    Transition t1
+      from = s1
+      to = s2
+    EpsilonTransition et1
+      etrans = t1
+
+    Action a1
+      scope = []
+      
+    Variable _    
+    Event _
+      action = []
+    SpawnAction _
+      spaction = []
+      spmachine = []
+    NormalTransition _
+      ntrans = []
+      onevent = []
+    TimeoutTransition _
+      ttrans = []
+      maxtime = []
+    WildCardTransition _
+      wtrans = []
+      wfrom = []
+      wonevent = []
+}
