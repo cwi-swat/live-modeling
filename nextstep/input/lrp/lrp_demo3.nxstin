@@ -35,11 +35,11 @@ input {
     
     Event e1
       action = a1    
-    Action a1
-      scope = v1
       
     Variable v1
     
+    Action a1
+      scope = v1
     Action a2
       scope = []      
     Action a3
@@ -111,7 +111,7 @@ input {
     
     State s1
       nested = blahblah
-      onentry = a2
+      onentry = a5
       running = []
       onexit = a3
     
@@ -136,18 +136,20 @@ input {
       maxtime = 100    
     
     Event e1
-      action = a1    
-    Action a1
-      scope = v1
+      action = a1      
       
     Variable v1
     
+    Action a1
+      scope = v1
     Action a2
       scope = []      
     Action a3
       scope = []
     Action a4  
       scope = []
+    Action a5
+      scope = v1
         
     SpawnAction sa2
       spaction = a2

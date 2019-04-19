@@ -218,14 +218,19 @@ private Scope resolveQuantDecl((QuantDecl)`<VarName v>: <Expr expr>`, Scope scp,
   str tipe = findType(expr,col);  
   scp.cls.fields += [field("<v>",tipe)];
 
-  col.addToEnv("<scp.cls.name>_<v>",scp.stp,<"<v>",col.getHeader(expr@\loc)>);
+  //UT: this is a HACK! 19-04-2019
+  if ((Expr)`old[<Expr _>]` := expr) {
+    col.addToEnv("<scp.cls.name>_<v>",old(),<"<v>",col.getHeader(expr@\loc)>);
+  } else {  
+    col.addToEnv("<scp.cls.name>_<v>",scp.stp,<"<v>",col.getHeader(expr@\loc)>);
+  }
         
   return scp;
 }
 
 void resolve((Formula)`forall <{QuantDecl ","}+ decls> | <Formula form>`, Scope scp, Collect col) { 
   for (QuantDecl d <- decls) {
-    scp = resolveQuantDecl(d,scp,col);
+    scp = resolveQuantDecl(d,scp,col); // This is a BUG: resulting scopes can be different (old and new for the migration part) 
   }
 
   resolve(form, scp, col);

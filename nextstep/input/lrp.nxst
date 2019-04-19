@@ -63,13 +63,13 @@ runtime {
 		timeNow: int
 		runningMachines: RuntimeMachine*		// multiple concurrent (root) machines
 		cache: CachedAction*					//ordered sequence
-		root: Machine*
+		root: Machine*                // those machines that a spawned from the program
 		
 		invariants {
 			timeNow > 0
 				
-			// one-to-one relation with the nested machines	
-			forall m: root | one (m & runningMachines.rmachine)
+			// Root running machines	
+			root = runningMachines.rmachine
 				
 			// if there are spawn actions in the cache then the corresponding (nested) machines have been started
 		}		
@@ -136,11 +136,8 @@ runtime {
 			// timer is started
 			startTime >= 0 && startTime <= Runtime.timeNow
 			
-			// one-to-one relation with the nested machines
-			forall m: rstate.nested | one (m & runningNestedMachines.rmachine)
-			
-			// structurally consistent with the static part
-			forall m: runningNestedMachines | m.rmachine in rstate.nested			
+			//Structural consistency with the static part
+			runningNestedMachines.rmachine = rstate.nested
 		}
 	}
 	
@@ -156,18 +153,39 @@ migration {
 	// time rule
 	new[Runtime.timeNow] >= old[Runtime.timeNow] && new[Runtime.timeNow] <= old[Runtime.timeNow] + 1
 	
+	// root machines are the same
+	new[Runtime.root] = old[Runtime.root]
+	
 	// if a current state has been removed 
-	forall m1: new[RuntimeMachine], m2: old[RuntimeMachine] | (m1.rmachine = m2.rmachine) && 
-	   not m1.currentState.rstate in m2.rmachine.states => m1.currentState.rstate = m1.rmachine.initState
+//	forall m1: new[RuntimeMachine], m2: old[RuntimeMachine] | (m1.rmachine = m2.rmachine) && 
+//	   not m2.currentState.rstate in m1.rmachine.states => m1.currentState.rstate = m1.rmachine.initState
 	
 	// if certain variables have changed we need to update (reexecute) actions that depend on them (or at least propose to do so) 
-	forall m1: new[RuntimeMachine], m2: old[RuntimeMachine] | (m1.rmachine = m2.rmachine) &&
-	 (forall v: ((m1.changedValues -- m2.changedValues) ++ (m2.changedValues -- m1.changedValues)) |
-	   (exists a: Action | v in a.scope => a in new[Runtime.cache.caction]))
+	//forall m1: new[RuntimeMachine], m2: old[RuntimeMachine] | (m1.rmachine = m2.rmachine) &&
+	// (forall v: ((m1.changedValues -- m2.changedValues) ++ (m2.changedValues -- m1.changedValues)) |
+	//   (exists a: Action | v in a.scope => a in new[Runtime.cache.caction]))
 
+  //18-04: returns unsat !!!!
 	// if the current state is different from the previous one then we need to execute all necessary actions (exit, entry, stop/start nested machines)
-	forall m1: new[RuntimeMachine], m2: old[RuntimeMachine] |  
-	   ((m1.rmachine = m2.rmachine) && not (m1.currentState = m2.currentState)) => 
-	   ((m1.currentState.rstate.onentry in new[Runtime.cache.caction]) && (m2.currentState.rstate.onexit in new[Runtime.cache.caction]))
+	forall m1: new[RuntimeMachine], m2: old[RuntimeMachine] | 
+	   (m1.rmachine = old[m2.rmachine]) && (m1.currentState.rstate != old[m2.currentState.rstate]) => 
+	   ((m1.currentState.rstate.onentry in new[Runtime.cache.caction]) && (old[m2.currentState.rstate.onexit] in new[Runtime.cache.caction]))
+	
+	// This is the style that we want eventually: (TODO)
+	//forall m: RuntimeMachine | new[m.currentState.rstate] != old[m.currentState.rstate] => 
+  //   ((new[m.currentState.rstate.onentry] in new[Runtime.cache.caction]) && 
+  //    (old[m.currentState.rstate.onexit] in new[Runtime.cache.caction]))
+	
+	// Ensure structural consistency for the new run-time state
+	forall rm1: new[RuntimeMachine], rm2: new[RuntimeMachine] |
+	   rm1.rmachine = rm2.rmachine => rm1 = rm2 
+	   
+	forall rs1: new[RuntimeState], rs2: new[RuntimeState] |
+	   rs1.rstate = rs2.rstate => rs1 = rs2
+	   
+	// alternative for the distance heuristic (try-out)
+	
+	
+	
 }
 
