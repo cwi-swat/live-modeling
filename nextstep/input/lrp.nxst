@@ -157,21 +157,25 @@ migration {
 	new[Runtime.root] = old[Runtime.root]
 	
 	// if a current state has been removed 
-//	forall m1: new[RuntimeMachine], m2: old[RuntimeMachine] | (m1.rmachine = m2.rmachine) && 
-//	   not m2.currentState.rstate in m1.rmachine.states => m1.currentState.rstate = m1.rmachine.initState
+	forall m1: new[RuntimeMachine], m2: old[RuntimeMachine] | 
+	  (m1.rmachine = old[m2.rmachine] && 
+	   not (old[m2.currentState.rstate] in m1.rmachine.states)) => 
+	     m1.currentState.rstate = m1.rmachine.initState
 	
 	// if certain variables have changed we need to update (reexecute) actions that depend on them (or at least propose to do so) 
-	//forall m1: new[RuntimeMachine], m2: old[RuntimeMachine] | (m1.rmachine = m2.rmachine) &&
-	// (forall v: ((m1.changedValues -- m2.changedValues) ++ (m2.changedValues -- m1.changedValues)) |
-	//   (exists a: Action | v in a.scope => a in new[Runtime.cache.caction]))
+	forall m1: new[RuntimeMachine], m2: old[RuntimeMachine] | 
+	  m1.rmachine = old[m2.rmachine] =>
+	 (forall v: ((m1.changedValues -- old[m2.changedValues]) ++ (old[m2.changedValues] -- m1.changedValues)) |
+	   (exists a: Action | v in a.scope => a in new[Runtime.cache.caction]))
 
-  //18-04: returns unsat !!!!
 	// if the current state is different from the previous one then we need to execute all necessary actions (exit, entry, stop/start nested machines)
 	forall m1: new[RuntimeMachine], m2: old[RuntimeMachine] | 
-	   (m1.rmachine = old[m2.rmachine]) && (m1.currentState.rstate != old[m2.currentState.rstate]) => 
-	   ((m1.currentState.rstate.onentry in new[Runtime.cache.caction]) && (old[m2.currentState.rstate.onexit] in new[Runtime.cache.caction]))
+	   (m1.rmachine = old[m2.rmachine] && 
+	    m1.currentState.rstate != old[m2.currentState.rstate]) =>
+	   ( (m1.currentState.rstate.onentry in new[Runtime.cache.caction]) && 
+	     (old[m2.currentState.rstate.onexit] in new[Runtime.cache.caction]) )
 	
-	// This is the style that we want eventually: (TODO)
+	// TODO: This is the style that we want eventually: (Nextep design note)
 	//forall m: RuntimeMachine | new[m.currentState.rstate] != old[m.currentState.rstate] => 
   //   ((new[m.currentState.rstate.onentry] in new[Runtime.cache.caction]) && 
   //    (old[m.currentState.rstate.onexit] in new[Runtime.cache.caction]))
@@ -182,10 +186,6 @@ migration {
 	   
 	forall rs1: new[RuntimeState], rs2: new[RuntimeState] |
 	   rs1.rstate = rs2.rstate => rs1 = rs2
-	   
-	// alternative for the distance heuristic (try-out)
-	
-	
 	
 }
 
