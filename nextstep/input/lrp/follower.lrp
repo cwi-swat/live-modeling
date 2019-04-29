@@ -25,7 +25,9 @@
           [ mright := speed negated.
              mlef := speed.]))
       (state lookleft
-        )
+        (onentry 
+          [mright := speed.
+          mleft := speed negated.]))
       (state centerfromright
         (onentry 
           [mright := speed.
