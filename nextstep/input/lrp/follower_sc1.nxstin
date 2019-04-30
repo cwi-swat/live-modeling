@@ -14,7 +14,7 @@ input {
     Machine follower
       states = init, moving, looking
       initState = init
-      variables = sensor, mright, mleft, speed, mode
+      variables = []
       events = in, out, stop       
       transitions = tinit, tms, tsm, tes   
     
@@ -154,6 +154,7 @@ input {
       runningMachines = rfollower
       root = follower
       cache = []
+      global = sensor, mright, mleft, speed, mode
     RuntimeMachine rfollower
       rmachine = follower 
       currentState = rinit

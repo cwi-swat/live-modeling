@@ -42,6 +42,7 @@ input {
       timeNow = 1
       runningMachines = rblah
       cache = []
+      global = []
     RuntimeMachine rblah
       rmachine = blah 
       currentState = rs1

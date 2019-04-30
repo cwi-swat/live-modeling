@@ -64,6 +64,7 @@ runtime {
 		runningMachines: RuntimeMachine*		// multiple concurrent (root) machines
 		cache: CachedAction*					//ordered sequence
 		root: Machine*                // those machines that a spawned from the program
+		global: Variable*
 		
 		invariants {
 			timeNow > 0
@@ -85,7 +86,7 @@ runtime {
 			// structurally consistent with the static part
 			currentState.rstate in rmachine.states
 			forall t: triggeredTransition | t in rmachine.transitions
-			forall v: changedValues | v in rmachine.variables
+			forall v: changedValues | v in (rmachine.variables ++ Runtime.global)
 			
 			// one or no triggered transition [0..1]
 			one triggeredTransition || no triggeredTransition		

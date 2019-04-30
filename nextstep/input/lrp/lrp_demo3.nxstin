@@ -74,6 +74,7 @@ input {
   old runtime
     Runtime x
       root = blah
+      global = []
       timeNow = 1
       runningMachines = rblah
       cache = ca4
