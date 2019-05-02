@@ -1,10 +1,11 @@
 input { 
 // static part: follower.lrp
-// runtime: not stable state, as the epsilon transition should fire
+// runtime: the epsilon transition just fired, but the onentry action is not in the cache
 // reason to migrate: not consistent runtime state
-// expected outcome: change of the current state
+// expected outcome: the onentry action should be in the cache
 // tested migration rules: 
-// - if the current state is changed, its onentry actions are cached
+// - domain specific distance: distance in cached actions and changed variables should not matter,
+// while the current state and the triggered transition should be kept the same
   old static
     Variable sensor
     Variable mright
@@ -195,13 +196,13 @@ input {
       global = sensor, mright, mleft, speed, mode
     RuntimeMachine rfollower
       rmachine = follower 
-      currentState = rinit
-      triggeredTransition = []
+      currentState = rmoving
+      triggeredTransition = tinit
       changedValues = []
-    RuntimeState rinit
-      rstate = init  
+    RuntimeState rmoving
+      rstate = moving  
       startTime = 0   
-      runningNestedMachines = []
+      runningNestedMachines = []      
     RuntimeMachine rsimulator
       rmachine = simulator 
       currentState = roffline

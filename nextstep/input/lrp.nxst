@@ -190,3 +190,15 @@ migration {
 	
 }
 
+distance {
+  ((new[RuntimeMachine.rmachine] -- old[RuntimeMachine.rmachine]) ++ (old[RuntimeMachine.rmachine] -- new[RuntimeMachine.rmachine])): 0
+  //RuntimeMachine.triggeredTransition: 0
+  //RuntimeMachine.currentState.rstate: 0
+  //RuntimeState.startTime: 2
+  //RuntimeState.runningNestedMachines: 2
+  
+  //Runtime.runningMachines: 1
+  //Runtime.global: 0
+  // Runtime.cache.caction 
+  // CachedAction.index // here the order in the cache is important
+}

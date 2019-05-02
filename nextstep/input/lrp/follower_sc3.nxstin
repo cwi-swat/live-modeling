@@ -1,10 +1,10 @@
 input { 
 // static part: follower.lrp
-// runtime: not stable state, as the epsilon transition should fire
-// reason to migrate: not consistent runtime state
-// expected outcome: change of the current state
-// tested migration rules: 
-// - if the current state is changed, its onentry actions are cached
+// runtime: the current state has the nested machine running
+// reason to migrate: no 
+// expected outcome: the same runtime state
+// tested migration rules: no
+
   old static
     Variable sensor
     Variable mright
@@ -188,20 +188,29 @@ input {
       
   old runtime
     Runtime x
-      timeNow = 0
+      timeNow = 11
       runningMachines = rfollower, rsimulator
       root = follower, simulator
       cache = []
       global = sensor, mright, mleft, speed, mode
     RuntimeMachine rfollower
       rmachine = follower 
-      currentState = rinit
+      currentState = rlooking
       triggeredTransition = []
       changedValues = []
-    RuntimeState rinit
-      rstate = init  
-      startTime = 0   
-      runningNestedMachines = []
+    RuntimeState rlooking
+      rstate = looking  
+      startTime = 10   
+      runningNestedMachines = rlookalgo      
+    RuntimeMachine rlookalgo
+      rmachine = lookalgo 
+      currentState = rlookleft
+      triggeredTransition = []
+      changedValues = []
+    RuntimeState rlookleft
+      rstate = lookleft  
+      startTime = 10   
+      runningNestedMachines = []  
     RuntimeMachine rsimulator
       rmachine = simulator 
       currentState = roffline
