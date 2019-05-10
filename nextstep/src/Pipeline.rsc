@@ -77,7 +77,8 @@ NxtpToAlleTransResult translateNxtpToAlle(Spec spc, NextepInstance inst) {
   spc = parseFile(normalize(spc));
   
   // extract (instance) models
-  Models models = addNewRuntime(extract(spc, resolveTypes(spc), inst));
+  Models models = addNewRuntime(extract(spc, resolveTypes(spc), inst));  
+  models = addDistanceRels(models, (Spec)`<StaticDef _> <DynamicDef _> <MigrationDef _> distance {<PriorityDistance* _>}` := spc);
  
   // generate AlleAlle relations 
   NX2AlleMapping rels = generateAlleRelations(models);

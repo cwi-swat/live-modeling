@@ -122,6 +122,10 @@ Spec annotate(Spec spc, ResolvedAlleRels rels, ResolvedHeaders headers) {
     case Expr expr => expr[@header = headers[expr@\loc]][@alleRel = rels[expr@\loc].name] when (Expr)`<VarName _>` := expr
     case Expr expr => expr[@header = headers[expr@\loc]] when (Expr)`<VarName _>` !:= expr
   }
+  spc.distance =visit(spc.distance) {
+    case Expr expr => expr[@header = headers[expr@\loc]][@alleRel = rels[expr@\loc].name] when (Expr)`<VarName _>` := expr
+    case Expr expr => expr[@header = headers[expr@\loc]] when (Expr)`<VarName _>` !:= expr
+  }
   
   return spc;
 }
@@ -148,6 +152,9 @@ private tuple[Step stp, Part prt] modelToStepAndPart(oldStatic()) = <old(),stati
 void resolve(Spec spc, Scope scp, Collect col) {
   resolve(spc.\dynamic, scp, col);
   resolve(spc.migration, scp, col);
+  if ((Spec)`<StaticDef _> <DynamicDef _> <MigrationDef _> <DistanceDef d>` := spc) {
+    resolve(d, scp, col);
+  }
 }
   
 void resolve((DynamicDef)`runtime { <Class* cs> }`, Scope scp, Collect col) {
@@ -162,6 +169,12 @@ void resolve((MigrationDef)`migration { <Formula* rules>}`, Scope scp, Collect c
   }
 }
 
+void resolve((DistanceDef)`distance { <PriorityDistance* priorities>}`, Scope scp, Collect col) { 
+  for (PriorityDistance p <- priorities) {
+    resolve(p, scope(new(), col.lookupCls("Runtime"), scp), col);
+  }
+}
+
 void resolve(c:(Class)`class <ClassName name> { <ClassBody body>}`, Scope scp, Collect col) {
   col.addAlleRel(c@\loc, col.lookupClass("<name>", scp.stp));  
   
@@ -172,6 +185,10 @@ void resolve((ClassBody)`<FieldDecl* fields> <Invariant* inv>`, Scope scp, Colle
   for (Invariant i <- inv) {
     resolve(i, scp, col);
   }
+}
+
+void resolve((PriorityDistance)`<Expr expr> : <Int p>`, Scope scp, Collect col) {
+  resolve (expr, scp, col);
 }
 
 void resolve((Invariant)`invariant: <Formula form>`, Scope scp, Collect col) { 

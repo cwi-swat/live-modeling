@@ -20,8 +20,15 @@ alias NX2AlleMapping = rel[NXRelation nx, RelationDef alle, Model model];
 
 Models addNewRuntime (Models models) 
   = models 
-  + (newRuntime(): generateNX4NewRuntime(models[oldRuntime()], models[oldStatic()], models[newStatic()]))
+  + (newRuntime(): generateNX4NewRuntime(models[oldRuntime()], models[oldStatic()], models[newStatic()]));  
+
+Models addDistanceRels (Models models, false)
+  = models 
   + (distance(): generateNX4NewRuntime(models[oldRuntime()], models[oldStatic()], models[newStatic()]));  
+
+Models addDistanceRels (Models models, true)
+  = models 
+  + (distance(): {});  
 
 NX2AlleMapping generateAlleRelations (Models models) 
   = {<r, genFixedBoundsRel(r, t, "po"), oldStatic()> | bounds(r, t) <- models[oldStatic()]}

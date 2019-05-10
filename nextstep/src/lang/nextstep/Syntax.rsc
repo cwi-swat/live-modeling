@@ -2,13 +2,15 @@ module lang::nextstep::Syntax
 
 extend lang::nextstep::CoreSyntax;
 
-start syntax Spec = StaticDef static DynamicDef dynamic MigrationDef migration;
+start syntax Spec = StaticDef static DynamicDef dynamic MigrationDef migration DistanceDef? distance;
 
 syntax StaticDef = "static" "{" Class* classes "}";
 
 syntax DynamicDef = "runtime" "{" Class* classes "}";
 
 syntax MigrationDef = "migration" "{" Formula* rules "}";
+
+syntax DistanceDef = "distance" "{" PriorityDistance* priorities "}";
 
 //syntax Class = "class" ClassName name Super? Bounds? bounds "{" ClassBody body "}";
 syntax Class = "class" ClassName name "{" ClassBody body "}";
@@ -103,4 +105,6 @@ syntax Literal
   = intLit: Int
   ;
   
-
+syntax PriorityDistance
+  = Expr distance ":" Int priority
+  ;
