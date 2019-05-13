@@ -96,7 +96,9 @@ NxtpToAlleTransResult translateNxtpToAlle(Spec spc, NextepInstance inst) {
   
   // generate constraints and translate invariants
   list[AlleFormula] forms = generateAlleConstraints(annotatedSpc, rels) + translate(annotatedSpc);
-  Maybe[ObjectiveSection] objectives = generateAlleObjectives(rels);
+  
+  // generate objectives (minimum distance)
+  Maybe[ObjectiveSection] objectives = generateAlleObjectives(rels, annotatedSpc);
   
   // write AlleAlle file
   return <problem(toList(rels.alle), forms, objectives, nothing()), rels>;

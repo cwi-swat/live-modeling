@@ -92,7 +92,7 @@ AlleFormula translate(f:(Formula)`exists <{QuantDecl ","}+ decls> | <Formula for
               translate(form));
 
 AlleExpr translate((Expr)`( <Expr ex> )`) = translate(ex);
-AlleExpr translate(ex:(Expr)`<VarName v>`) = relvar(ex@alleRel);  
+AlleExpr translate(ex:(Expr)`<VarName v>`) = relvar(ex@alleRel);
 AlleExpr translate((Expr)`<Literal l>`) = translate(l);
 AlleExpr translate(ex:(Expr)`<Expr lhs>.<Expr rhs>`) 
   = project(naturalJoin(translate(lhs), translate(rhs)), [a.name| a <- ex@header]);
@@ -288,7 +288,8 @@ AlleFormula distanceDeclaration(intType(), RelationDef d, RelationDef xo, Relati
       AlleFormula f2 := nonEmpty(select(naturalJoin(relvar("d"), relvar(d.name)), 
                           equal(att("delta"), att("val"))));
 
-Maybe[ObjectiveSection] generateAlleObjectives(NX2AlleMapping rels) {
+// Changes needed here: generate objectives for DS distance
+Maybe[ObjectiveSection] generateAlleObjectives(NX2AlleMapping rels, (Spec)`<StaticDef _> <DynamicDef _> <MigrationDef _>`) {
   list[Objective] criteria = 
     [minimize(generateMetric(nxDom, alleRel)) | <NaryRelation(_, _, nxDom, _), alleRel, distance()> <- rels]
   + [minimize(generateMetric(class(nxDom), alleRel)) | <UnaryRelation(nxDom), alleRel, distance()> <- rels];  
@@ -296,11 +297,22 @@ Maybe[ObjectiveSection] generateAlleObjectives(NX2AlleMapping rels) {
   return just(objectives(lex(), criteria)); 
 }
 
+Maybe[ObjectiveSection] generateAlleObjectives(NX2AlleMapping rels, (Spec)`<StaticDef _> <DynamicDef _> <MigrationDef _> <DistanceDef d>`) {
+  list[Objective] criteria =
+    [ minimize(generateMetric( translate(expr) )) | (PriorityDistance)`<Expr expr> : <Int n>` <- d.priorities]; 
+    //[minimize(generateMetric(nxDom, alleRel)) | <NaryRelation(_, _, nxDom, _), alleRel, distance()> <- rels]
+  //+ [minimize(generateMetric(class(nxDom), alleRel)) | <UnaryRelation(nxDom), alleRel, distance()> <- rels];  
+  
+  return just(objectives(lex(), criteria)); 
+}
+
+
 AlleExpr generateMetric(class(Class _), RelationDef alleRel)
   = aggregate(relvar(alleRel.name), [aggFuncDef(count(), "c")]);
   
 AlleExpr generateMetric(intType(), RelationDef alleRel)
   = aggregate(relvar(alleRel.name), [aggFuncDef(sum("delta"), "s")]);  
 
-
+AlleExpr generateMetric(AlleExpr expr)
+  = aggregate(expr, [aggFuncDef(count(), "c")]);
   

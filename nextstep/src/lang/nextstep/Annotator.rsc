@@ -119,12 +119,14 @@ Spec annotate(Spec spc, ResolvedAlleRels rels, ResolvedHeaders headers) {
     case Expr expr => expr[@header = headers[expr@\loc]] when (Expr)`<VarName _>` !:= expr 
   }
   spc.migration =visit(spc.migration) {
-    case Expr expr => expr[@header = headers[expr@\loc]][@alleRel = rels[expr@\loc].name] when (Expr)`<VarName _>` := expr
+    case Expr expr => expr[@header = headers[expr@\loc]][@alleRel = rels[expr@\loc].name] when (Expr)`<VarName _>` := expr   
     case Expr expr => expr[@header = headers[expr@\loc]] when (Expr)`<VarName _>` !:= expr
   }
-  spc.distance =visit(spc.distance) {
-    case Expr expr => expr[@header = headers[expr@\loc]][@alleRel = rels[expr@\loc].name] when (Expr)`<VarName _>` := expr
-    case Expr expr => expr[@header = headers[expr@\loc]] when (Expr)`<VarName _>` !:= expr
+  if ((Spec)`<StaticDef _> <DynamicDef _> <MigrationDef _> distance {<PriorityDistance* _>}` := spc) {
+    spc.distance =visit(spc.distance) {
+      case Expr expr => expr[@header = headers[expr@\loc]][@alleRel = rels[expr@\loc].name] when bprintln("Its here! " + expr + "<expr@\loc>"), (Expr)`<VarName _>` := expr, bprintln("Now its here" + " Alle relation: " + rels[expr@\loc].name)
+      case Expr expr => expr[@header = headers[expr@\loc]] when (Expr)`<VarName _>` !:= expr
+    }     
   }
   
   return spc;
