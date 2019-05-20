@@ -64,6 +64,7 @@ syntax Expr
   > var:          VarName 
   | lit:          Literal
   | left dotJoin: Expr "." Expr
+  | left relJoin: Expr "_" Expr
   > restrict:     Expr "where" RestrictStat
   > left ( union: Expr "++" Expr
          | intersec: Expr "&" Expr

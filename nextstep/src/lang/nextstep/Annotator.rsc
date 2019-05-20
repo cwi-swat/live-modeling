@@ -219,6 +219,7 @@ void resolve((Formula)`<Formula lhs> || <Formula rhs>`, Scope scp, Collect col) 
 default void resolve(Formula f, Scope scp, Collect col) { throw "Unable to resolve formula <f>"; }
 
 private str findType((Expr)`<Expr _>.<Expr rhs>`, Collect col) = findType(rhs,col);
+private str findType((Expr)`<Expr _>_<Expr rhs>`, Collect col) = findType(rhs,col);
 private str findType(ex:(Expr)`<VarName v>`, Collect col) = col.getType(ex@\loc);
 private str findType(ex:(Expr)`new[<Expr rhs>]`, Collect col) = findType(rhs,col);
 private str findType(ex:(Expr)`old[<Expr rhs>]`, Collect col) = findType(rhs,col);
@@ -296,6 +297,20 @@ void resolve(e:(Expr)`<Literal l>`, Scope scp, Collect col) {
 }
 
 void resolve(e:(Expr)`<Expr lhs>.<Expr rhs>`, Scope scp, Collect col) {
+  resolve(lhs,scp,col);
+
+  Cls lhsCls = col.lookupCls(findType(lhs,col));
+  resolve(rhs,scope(scp.stp,lhsCls,scp),col);
+  
+  list[HeaderAttribute] lHeader = col.getHeader(lhs@\loc);
+  list[HeaderAttribute] rHeader = col.getHeader(rhs@\loc);
+  
+  list[HeaderAttribute] joinedHeader = [h | HeaderAttribute h <- lHeader, h notin rHeader] + [h | HeaderAttribute h <- rHeader, h notin lHeader];
+        
+  col.addHeader(e@\loc, joinedHeader); 
+}
+
+void resolve(e:(Expr)`<Expr lhs>_<Expr rhs>`, Scope scp, Collect col) {
   resolve(lhs,scp,col);
 
   Cls lhsCls = col.lookupCls(findType(lhs,col));

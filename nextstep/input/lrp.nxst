@@ -191,9 +191,23 @@ migration {
 }
 
 distance {
-  ((new[RuntimeMachine.rmachine] -- old[RuntimeMachine.rmachine]) ++ (old[RuntimeMachine.rmachine] -- new[RuntimeMachine.rmachine])): 0
-  ((new[RuntimeMachine.triggeredTransition] -- old[RuntimeMachine.triggeredTransition]) ++ (old[RuntimeMachine.triggeredTransition] -- new[RuntimeMachine.triggeredTransition])): 0
-  ((new[RuntimeMachine.currentState.rstate] -- old[RuntimeMachine.currentState.rstate]) ++ (old[RuntimeMachine.currentState.rstate] -- new[RuntimeMachine.currentState.rstate])): 0
+  (new[Runtime_runningMachines] -- old[Runtime_runningMachines]) ++ (old[Runtime_runningMachines] -- new[Runtime_runningMachines]): 0
+  (new[Runtime_global] -- old[Runtime_global]) ++ (old[Runtime_global] -- new[Runtime_global]): 0
+  (new[RuntimeMachine_rmachine] -- old[RuntimeMachine_rmachine]) ++ (old[RuntimeMachine_rmachine] -- new[RuntimeMachine_rmachine]): 0
+  (new[RuntimeMachine_currentState] -- old[RuntimeMachine_currentState]) ++ (old[RuntimeMachine_currentState] -- new[RuntimeMachine_currentState]): 0
+  (new[RuntimeMachine_triggeredTransition] -- old[RuntimeMachine_triggeredTransition]) ++ (old[RuntimeMachine_triggeredTransition] -- new[RuntimeMachine_triggeredTransition]): 0
+  (new[RuntimeState_rstate] -- old[RuntimeState_rstate]) ++ (old[RuntimeState_rstate] -- new[RuntimeState_rstate]): 0
+  (new[RuntimeState_startTime] -- old[RuntimeState_startTime]) ++ (old[RuntimeState_startTime] -- new[RuntimeState_startTime]): 0
+  (new[RuntimeState_runningNestedMachines] -- old[RuntimeState_runningNestedMachines]) ++ (old[RuntimeState_runningNestedMachines] -- new[RuntimeState_runningNestedMachines]): 0  
+  
+ // (new[Runtime_cache] -- old[Runtime_cache]) ++ (old[Runtime_cache] -- new[Runtime_cache]): 1
+ // (new[RuntimeMachine_changedValues] -- old[RuntimeMachine_changedValues]) ++ (old[RuntimeMachine_changedValues] -- new[RuntimeMachine_changedValues]): 1
+ // (new[CachedAction_caction] -- old[CachedAction_caction]) ++ (old[CachedAction_caction] -- new[CachedAction_caction]): 1
+ // (new[CachedAction_index] -- old[CachedAction_index]) ++ (old[CachedAction_index] -- new[CachedAction_index]): 1
+  
+  //((new[RuntimeMachine.rmachine] -- old[RuntimeMachine.rmachine]) ++ (old[RuntimeMachine.rmachine] -- new[RuntimeMachine.rmachine])): 0
+  //((new[RuntimeMachine.triggeredTransition] -- old[RuntimeMachine.triggeredTransition]) ++ (old[RuntimeMachine.triggeredTransition] -- new[RuntimeMachine.triggeredTransition])): 0
+  //((new[RuntimeMachine.currentState.rstate] -- old[RuntimeMachine.currentState.rstate]) ++ (old[RuntimeMachine.currentState.rstate] -- new[RuntimeMachine.currentState.rstate])): 0
   //RuntimeState.startTime: 2
   //RuntimeState.runningNestedMachines: 2
   

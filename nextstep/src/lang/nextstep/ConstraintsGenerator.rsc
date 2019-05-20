@@ -96,6 +96,11 @@ AlleExpr translate(ex:(Expr)`<VarName v>`) = relvar(ex@alleRel);
 AlleExpr translate((Expr)`<Literal l>`) = translate(l);
 AlleExpr translate(ex:(Expr)`<Expr lhs>.<Expr rhs>`) 
   = project(naturalJoin(translate(lhs), translate(rhs)), [a.name| a <- ex@header]);
+  
+// new expression for a relation
+AlleExpr translate(ex:(Expr)`<Expr lhs>_<Expr rhs>`) 
+  = naturalJoin(translate(lhs), translate(rhs));
+  
 
 AlleExpr translate(ex:(Expr)`old[<Expr rhs>]`) = translate(rhs);
 AlleExpr translate(ex:(Expr)`new[<Expr rhs>]`) = translate(rhs);
