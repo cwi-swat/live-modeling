@@ -71,6 +71,9 @@ runtime {
 				
 			// Root running machines	
 			root = runningMachines.rmachine
+			
+			// The index of an action in the cache is unique
+			forall ca1: cache, ca2: cache | ca1.index = ca2.index => ca1.caction = ca2.caction
 				
 			// if there are spawn actions in the cache then the corresponding (nested) machines have been started
 		}		
@@ -116,7 +119,7 @@ runtime {
 				currentState.rstate = t.etrans.from) => one triggeredTransition
 			
 			// if no transition was triggered then the state runing action was executed
-			no triggeredTransition <=> currentState.rstate.running in Runtime.cache.caction 
+			no triggeredTransition => currentState.rstate.running in Runtime.cache.caction 
 									//(currentState.rstate = rmachine.initState && currentState.rstate.onentry in Runtime.cache.caction))
 			
 			// if a transition was triggered then an exit and an entry action were executed
@@ -200,19 +203,9 @@ distance {
   (new[RuntimeState_startTime] -- old[RuntimeState_startTime]) ++ (old[RuntimeState_startTime] -- new[RuntimeState_startTime]): 0
   (new[RuntimeState_runningNestedMachines] -- old[RuntimeState_runningNestedMachines]) ++ (old[RuntimeState_runningNestedMachines] -- new[RuntimeState_runningNestedMachines]): 0  
   
- // (new[Runtime_cache] -- old[Runtime_cache]) ++ (old[Runtime_cache] -- new[Runtime_cache]): 1
- // (new[RuntimeMachine_changedValues] -- old[RuntimeMachine_changedValues]) ++ (old[RuntimeMachine_changedValues] -- new[RuntimeMachine_changedValues]): 1
- // (new[CachedAction_caction] -- old[CachedAction_caction]) ++ (old[CachedAction_caction] -- new[CachedAction_caction]): 1
- // (new[CachedAction_index] -- old[CachedAction_index]) ++ (old[CachedAction_index] -- new[CachedAction_index]): 1
-  
-  //((new[RuntimeMachine.rmachine] -- old[RuntimeMachine.rmachine]) ++ (old[RuntimeMachine.rmachine] -- new[RuntimeMachine.rmachine])): 0
-  //((new[RuntimeMachine.triggeredTransition] -- old[RuntimeMachine.triggeredTransition]) ++ (old[RuntimeMachine.triggeredTransition] -- new[RuntimeMachine.triggeredTransition])): 0
-  //((new[RuntimeMachine.currentState.rstate] -- old[RuntimeMachine.currentState.rstate]) ++ (old[RuntimeMachine.currentState.rstate] -- new[RuntimeMachine.currentState.rstate])): 0
-  //RuntimeState.startTime: 2
-  //RuntimeState.runningNestedMachines: 2
-  
-  //((new[Runtime.runningMachines] -- old[Runtime.runningMachines]) ++ (old[Runtime.runningMachines] - new[Runtime.runningMachines])): 1
-  //((new[Runtime.global] -- old[Runtime.global]) ++ (old[Runtime.global] -- new[Runtime.global])): 0
-  // Runtime.cache.caction 
-  // CachedAction.index // here the order in the cache is important
+  (new[Runtime_cache] -- old[Runtime_cache]) ++ (old[Runtime_cache] -- new[Runtime_cache]): 1
+  (new[RuntimeMachine_changedValues] -- old[RuntimeMachine_changedValues]) ++ (old[RuntimeMachine_changedValues] -- new[RuntimeMachine_changedValues]): 1
+  (new[CachedAction_caction] -- old[CachedAction_caction]) ++ (old[CachedAction_caction] -- new[CachedAction_caction]): 1
+  (new[CachedAction_index] -- old[CachedAction_index]) ++ (old[CachedAction_index] -- new[CachedAction_index]): 1
+
 }
