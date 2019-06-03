@@ -1,0 +1,401 @@
+input { 
+// static part: follower.lrp
+// runtime: the value of a variable has changed, as a result an event has fired
+// reason to migrate: incomplete (inconsistent) runtime state
+// expected outcome: add an onentry action for the current (just eneterd) state
+// tested semantic relations: on-event triggered transition 
+
+  old static
+    Variable sensor
+    Variable mright
+    Variable mleft
+    Variable speed
+    Variable mode
+    
+    Machine follower
+      states = init, moving, looking
+      initState = init
+      variables = []
+      events = in, out, stop       
+      transitions = tinit, tms, tsm, tes   
+    
+    State init
+      nested = []
+      onentry = modetotrue
+      running = []
+      onexit = []
+    State moving
+      nested = []
+      onentry = speedbytwo
+      running = []
+      onexit = speedtozero
+    State looking 
+      nested = lookalgo
+      onentry = []
+      running = []
+      onexit = []   
+      
+    Transition tinit
+      from = init
+      to = moving
+    Transition tms
+      from = moving
+      to = looking
+    Transition tsm
+      from = looking
+      to = moving
+    Transition tes
+      from = init
+      to = init      
+      
+    NormalTransition nt1
+      ntrans = tms
+      onevent = out
+    NormalTransition nt2
+      ntrans = tsm
+      onevent = in
+    EpsilonTransition et1
+      etrans = tinit
+    WildCardTransition wt1
+      wtrans = tes
+      wfrom = init, moving, looking
+      wonevent = stop   
+    
+    Event in
+      action = sensorisone
+    Event out
+      action = sensoriszero
+    Event stop
+      action = modeisfalse
+          
+    Action speedbytwo
+      scope = mright, mleft, speed
+    Action speedtozero
+      scope = mright, mleft, speed
+    Action sensorisone
+      scope = sensor
+    Action sensoriszero
+      scope = sensor
+    Action modetotrue
+      scope = mode
+    Action modeisfalse
+      scope = mode
+    Action spawnnested
+      scope = []        
+    SpawnAction sa1
+      spaction = spawnnested
+      spmachine = lookalgo       
+ 
+    Machine lookalgo
+      states = lookright, centerfromright, lookleft, centerfromleft
+      initState = lookright
+      variables = [] //looktime
+      events = []       
+      transitions = tlrb, tlr, tfail, tfailb
+    
+    State lookright
+      nested = []
+      onentry = turnright
+      running = []
+      onexit = []
+    State centerfromright
+      nested = []
+      onentry = turnleft
+      running = []
+      onexit = []
+    State lookleft
+      nested = []
+      onentry = turnleft
+      running = []
+      onexit = []
+    State centerfromleft
+      nested = []
+      onentry = turnright
+      running = []
+      onexit = []
+      
+    //Variable looktime
+    
+    Transition tlrb
+      from = lookright
+      to = centerfromright
+    Transition tlr
+      from = centerfromright
+      to = lookleft
+    Transition tfail
+      from = lookleft
+      to = centerfromleft
+    Transition tfailb
+      from = centerfromleft
+      to = lookright
+      
+    TimeoutTransition tt1
+      ttrans = tlrb
+      maxtime = 1000
+    TimeoutTransition tt2
+      ttrans = tlr
+      maxtime = 1000
+    TimeoutTransition tt3
+      ttrans = tfail
+      maxtime = 1000 
+    TimeoutTransition tt4
+      ttrans = tfailb
+      maxtime = 1000 
+ 
+    Action turnright
+      scope = mright, mleft, speed
+    Action turnleft
+      scope = mright, mleft, speed
+    //Action _
+    //  scope = looktime    
+     
+    Machine simulator
+      states = online, offline
+      initState = offline
+      variables = []
+      events = []       
+      transitions = find, lose
+    
+    State online
+      nested = []
+      onentry = sensortoone
+      running = []
+      onexit = []
+    State offline
+      nested = []
+      onentry = sensortozero
+      running = []
+      onexit = [] 
+    
+    Transition find
+      from = offline
+      to = online
+    Transition lose
+      from = online
+      to = offline 
+      
+    TimeoutTransition tt5
+      ttrans = find
+      maxtime = 2000
+    TimeoutTransition tt6
+      ttrans = lose
+      maxtime = 500
+      
+    Action sensortoone
+      scope = sensor
+    Action sensortozero
+      scope = sensor
+      
+  old runtime
+    Runtime x
+      timeNow = 2000
+      runningMachines = rfollower, rsimulator
+      root = follower, simulator
+      cache = ca1, ca2
+      global = sensor, mright, mleft, speed, mode
+    RuntimeMachine rfollower
+      rmachine = follower 
+      currentState = rlooking
+      triggeredTransition = tsm
+      changedValues = sensor
+    RuntimeState rmoving
+      rstate = moving  
+      startTime = 2000   
+      runningNestedMachines = []       
+    RuntimeMachine rsimulator
+      rmachine = simulator 
+      currentState = ronline
+      triggeredTransition = find
+      changedValues = sensor
+    RuntimeState ronline
+      rstate = online  
+      startTime = 2000   
+      runningNestedMachines = []
+    CachedAction ca1
+      caction = sensortoone
+      index = 1
+    CachedAction ca2
+      caction = sensorisone
+      index = 2
+      
+  new static
+    Variable sensor
+    Variable mright
+    Variable mleft
+    Variable speed
+    Variable mode
+    
+    Machine follower
+      states = init, moving, looking
+      initState = init
+      variables = sensor, mright, mleft, speed, mode
+      events = in, out, stop       
+      transitions = tinit, tms, tsm, tes   
+    
+    State init
+      nested = []
+      onentry = modetotrue
+      running = []
+      onexit = []
+    State moving
+      nested = []
+      onentry = speedbytwo
+      running = []
+      onexit = speedtozero
+    State looking 
+      nested = lookalgo
+      onentry = []
+      running = []
+      onexit = []   
+      
+    Transition tinit
+      from = init
+      to = moving
+    Transition tms
+      from = moving
+      to = looking
+    Transition tsm
+      from = looking
+      to = moving
+    Transition tes
+      from = init
+      to = init      
+      
+    NormalTransition nt1
+      ntrans = tms
+      onevent = out
+    NormalTransition nt2
+      ntrans = tsm
+      onevent = in
+    EpsilonTransition et1
+      etrans = tinit
+    WildCardTransition wt1
+      wtrans = tes
+      wfrom = init, moving, looking
+      wonevent = stop   
+    
+    Event in
+      action = sensorisone
+    Event out
+      action = sensoriszero
+    Event stop
+      action = modeisfalse
+          
+    Action speedbytwo
+      scope = mright, mleft, speed
+    Action speedtozero
+      scope = mright, mleft, speed
+    Action sensorisone
+      scope = sensor
+    Action sensoriszero
+      scope = sensor
+    Action modetotrue
+      scope = mode
+    Action modeisfalse
+      scope = mode
+    Action spawnnested
+      scope = []        
+    SpawnAction sa1
+      spaction = spawnnested
+      spmachine = lookalgo       
+ 
+    Machine lookalgo
+      states = lookright, centerfromright, lookleft, centerfromleft
+      initState = lookright
+      variables = [] //looktime
+      events = []       
+      transitions = tlrb, tlr, tfail, tfailb
+    
+    State lookright
+      nested = []
+      onentry = turnright
+      running = []
+      onexit = []
+    State centerfromright
+      nested = []
+      onentry = turnleft
+      running = []
+      onexit = []
+    State lookleft
+      nested = []
+      onentry = turnleft
+      running = []
+      onexit = []
+    State centerfromleft
+      nested = []
+      onentry = turnright
+      running = []
+      onexit = []
+      
+    //Variable looktime
+    
+    Transition tlrb
+      from = lookright
+      to = centerfromright
+    Transition tlr
+      from = centerfromright
+      to = lookleft
+    Transition tfail
+      from = lookleft
+      to = centerfromleft
+    Transition tfailb
+      from = centerfromleft
+      to = lookright
+      
+    TimeoutTransition tt1
+      ttrans = tlrb
+      maxtime = 1000
+    TimeoutTransition tt2
+      ttrans = tlr
+      maxtime = 1000
+    TimeoutTransition tt3
+      ttrans = tfail
+      maxtime = 1000 
+    TimeoutTransition tt4
+      ttrans = tfailb
+      maxtime = 1000 
+ 
+    Action turnright
+      scope = mright, mleft, speed
+    Action turnleft
+      scope = mright, mleft, speed
+    //Action _
+    //  scope = looktime  
+    
+    Machine simulator
+      states = online, offline
+      initState = offline
+      variables = []
+      events = []       
+      transitions = find, lose
+    
+    State online
+      nested = []
+      onentry = sensortoone
+      running = []
+      onexit = []
+    State offline
+      nested = []
+      onentry = sensortozero
+      running = []
+      onexit = [] 
+    
+    Transition find
+      from = offline
+      to = online
+    Transition lose
+      from = online
+      to = offline 
+      
+    TimeoutTransition tt5
+      ttrans = find
+      maxtime = 2000
+    TimeoutTransition tt6
+      ttrans = lose
+      maxtime = 500
+      
+    Action sensortoone
+      scope = sensor
+    Action sensortozero
+      scope = sensor
+}

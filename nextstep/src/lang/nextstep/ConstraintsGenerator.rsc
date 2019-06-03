@@ -305,8 +305,6 @@ Maybe[ObjectiveSection] generateAlleObjectives(NX2AlleMapping rels, (Spec)`<Stat
 Maybe[ObjectiveSection] generateAlleObjectives(NX2AlleMapping rels, (Spec)`<StaticDef _> <DynamicDef _> <MigrationDef _> <DistanceDef d>`) {
   list[Objective] criteria =
     [ minimize(generateMetric( translate(expr) )) | (PriorityDistance)`<Expr expr> : <Int n>` <- d.priorities]; 
-    //[minimize(generateMetric(nxDom, alleRel)) | <NaryRelation(_, _, nxDom, _), alleRel, distance()> <- rels]
-  //+ [minimize(generateMetric(class(nxDom), alleRel)) | <UnaryRelation(nxDom), alleRel, distance()> <- rels];  
   
   return just(objectives(lex(), criteria)); 
 }

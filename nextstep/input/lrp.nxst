@@ -127,7 +127,8 @@ runtime {
 										                && (currentState.rstate.onentry in Runtime.cache.caction)) 
 			
 			// a variable can be changed by executing an ection
-			forall v: changedValues | (exists a: Runtime.cache.caction | v in a.scope)								
+			//forall v: changedValues | (forall a: Action | v in a.scope => a in Runtime.cache.caction) <-- this one interacts with the distance definition (what is more important: cache or changed values?)
+			forall v: changedValues | (exists a: Runtime.cache.caction | v in a.scope)											
 		}
 	}
 	
