@@ -8,12 +8,12 @@ syntax Type
 // COMMON LEXEMES
   
 lexical ClassName = ([A-Z] !<< [A-Z][a-zA-Z0-9_\']* !>> [a-zA-Z0-9_]) \ Keywords;
-lexical VarName = ([a-zA-Z] !<< [a-zA-Z][a-zA-Z0-9_\']* !>> [a-zA-Z0-9_]) \ Keywords;
+lexical VarName = ([a-z] !<< [a-z][a-zA-Z0-9_\']* !>> [a-zA-Z0-9_]) \ Keywords;
 lexical Atom = ([a-zA-Z] !<< [a-zA-Z][a-zA-Z0-9_\']* !>> [a-zA-Z0-9_]) \ Keywords;
 
 lexical Int = [0-9]+;
 
-keyword Keywords = "static" | "runtime" | "migration" | "class" | "invariant" | "invariants" | "not" | "no" | "some" | "one" | "forall" | "exists" | "int" | "old" | "new" | "input";
+keyword Keywords = "static" | "runtime" | "migration" | "class" | "invariant" | "invariants" | "not" | "no" | "some" | "one" | "forall" | "exists" | "int" | "old" | "new" | "input" | "this";
 
 layout Standard 
   = WhitespaceOrComment* !>> [\ \t\n\f\r] !>> "//";

@@ -22,7 +22,7 @@ import Set;
 import ParseTree;
 
 void checkAndVis(Problem alleProblem) {
-  ModelFinderResult result = checkInitialSolution(alleProblem);
+  ModelFinderResult result = checkInitialSolution(alleProblem, log = true);
   
   switch(result) {
     case sat(Model currentModel, Model (Domain) nextModel, void () stop): {
@@ -35,7 +35,7 @@ void checkAndVis(Problem alleProblem) {
 }
 
 OutputDef checkAndGetNextModel(Problem alleProblem, NX2AlleMapping mapping) {
-  ModelFinderResult result = checkInitialSolution(alleProblem);
+  ModelFinderResult result = checkInitialSolution(alleProblem, log = true);
   
   switch(result) {
     case sat(Model currentModel, Model (Domain) nextModel, void () stop): {

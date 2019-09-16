@@ -132,11 +132,11 @@ set[NXBounds] generateNX4NewRuntime(set[NXBounds] oldRuntime, set[NXBounds] oldS
   rel[str, NXTuple] newRuntimeBinaryIntFields = {<fieldName, binary(d,intHole())> | bounds(NaryRelation(str fieldName, Class dom, intType(), _), _) <- oldRuntime, 
                                                                                     single(NXAtom d) <- lookup(dom)}; 
                                                                                     
-  println("   debug 0");
-  //println([b | b <- domain(classLookup)]);
-  println(["<f>: <d>" | <f, binary(d, _)> <- newRuntimeBinaryIntFields]); // good here
-  println();                                                                                    
-                                                                                    
+  //println("   debug 0");
+  ////println([b | b <- domain(classLookup)]);
+  //println(["<f>: <d>" | <f, binary(d, _)> <- newRuntimeBinaryIntFields]); // good here
+  //println();                                                                                    
+  //                                                                                  
   
   // Last step, convert everything to NXBounds
   set[NXBounds] newRuntime = {bounds(UnaryRelation(c), newRuntimeUnaries[c]) 

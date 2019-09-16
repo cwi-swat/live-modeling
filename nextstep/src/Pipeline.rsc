@@ -23,6 +23,7 @@ import IO;
 import Set;
 import util::Maybe;
 import ParseTree;
+import util::Benchmark;
 
 alias NxtpToAlleTransResult = tuple[Problem alleProblem, NX2AlleMapping mapping]; 
 
@@ -56,18 +57,27 @@ void runAndVis(Spec spc, NextepInstance inst) {
 }
 
 loc runAndWriteNextModelToFile(Spec spc, NextepInstance inst) {
+  int startTime = cpuTime();
+  
   OutputDef output = runAndGetNextModel(spc, inst);
   
   loc outputFile = |project://nextstep/output/latestOutput.nxstout|;
   writeFile(outputFile, "<output>");
   
+  println("Done completely in <(cpuTime() - startTime) / 1000000> ms.");
+  
   return outputFile;
 }
 
 OutputDef runAndGetNextModel(Spec spc, NextepInstance inst) {
+  print("Translating from Nextep to AlleAlle ...");
+  int startTime = cpuTime();
+  
   NxtpToAlleTransResult result = translateNxtpToAlle(spc, inst);
   // write AlleAlle file
   writeFile(|project://nextstep/output/latestOutput.alle|, unparse(result.alleProblem));
+  
+  println(" done in <(cpuTime() - startTime) / 1000000> ms.");
   
   // Run AlleAlle solver and visualize result
   return checkAndGetNextModel(result.alleProblem, result.mapping);
@@ -78,18 +88,18 @@ NxtpToAlleTransResult translateNxtpToAlle(Spec spc, NextepInstance inst) {
   
   // extract (instance) models
   Models models = addNewRuntime(extract(spc, resolveTypes(spc), inst));  
-  models = addDistanceRels(models, (Spec)`<StaticDef _> <DynamicDef _> <MigrationDef _> distance {<PriorityDistance* _>}` := spc);
+  models = addDistanceRels(models, (Spec)`<StaticDef _> <DynamicDef _> <MigrationDef _> distance <PriorityDistance* _>` := spc);
  
   // generate AlleAlle relations 
   NX2AlleMapping rels = generateAlleRelations(models);
   
   // debug: problem in the line above (relation is not generated for cache)
-  println("   debug generateAlleRelations");
-  println({ "<alle.name>"| <NXRelation nx, RelationDef alle, oldStatic()> <- rels});
-  println({ "<alle.name>"| <NXRelation nx, RelationDef alle, oldRuntime()> <- rels});
-  println({ "<alle.name>"| <NXRelation nx, RelationDef alle, newStatic()> <- rels});
-  println({ "<alle.name>"| <NXRelation nx, RelationDef alle, newRuntime()> <- rels});
-  println();
+  //println("   debug generateAlleRelations");
+  //println({ "<alle.name>"| <NXRelation nx, RelationDef alle, oldStatic()> <- rels});
+  //println({ "<alle.name>"| <NXRelation nx, RelationDef alle, oldRuntime()> <- rels});
+  //println({ "<alle.name>"| <NXRelation nx, RelationDef alle, newStatic()> <- rels});
+  //println({ "<alle.name>"| <NXRelation nx, RelationDef alle, newRuntime()> <- rels});
+  //println();
   
   // type check (and resolve) nextep expressions using AlleAlle relations
   Spec annotatedSpc = annotate(spc,rels);

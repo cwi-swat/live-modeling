@@ -43,7 +43,6 @@ list[AlleFormula] generateAlleConstraints(Spec spec, NX2AlleMapping relations)
 RelationDef lookupAlleRelation(Class class, list[Model] models, NX2AlleMapping relations) {
   list[RelationDef] result
     = [r | <UnaryRelation(class), r, model> <- relations, model <- models];
-  println(result);
   return head(result);
 }
 
@@ -65,12 +64,12 @@ AlleFormula typeConstraint(str relName, Class dom, ran: intType(), str prefix, N
 // SEMANTIC RELATIONS
 
 list[AlleFormula] translate(Spec spc) = translate(spc.\dynamic) + translate(spc.migration);
-list[AlleFormula] translate((DynamicDef)`runtime { <Class* cs> }`) = [*translate(c) | Class c <- cs];
-list[AlleFormula] translate((MigrationDef)`migration { <Formula* rules>}`) =  [translate(f) | Formula f <- rules];
-list[AlleFormula] translate(c:(Class)`class <ClassName _> { <ClassBody body>}`) = translate(body);  
-list[AlleFormula] translate((ClassBody)`<FieldDecl* _> <Invariant* inv>`) = [*translate(i) | Invariant i <- inv];
-list[AlleFormula] translate((Invariant)`invariant: <Formula form>`) = [translate(form)];  
-list[AlleFormula] translate((Invariant)`invariants { <Formula+ forms> }`) = [translate(f) | Formula f <- forms];
+list[AlleFormula] translate((DynamicDef)`runtime <Class* cs>`) = [*translate(c) | Class c <- cs];
+list[AlleFormula] translate((MigrationDef)`migration <Formula* rules>`) =  [translate(f) | Formula f <- rules];
+list[AlleFormula] translate(c:(Class)`class <ClassName _> { <ClassBody body> }`) = translate(body);  
+list[AlleFormula] translate((ClassBody)`<FieldDecl* _>`) = []; // do nothing
+list[AlleFormula] translate((ClassBody)`<FieldDecl* _> <Invariant inv>`) = [*translate(inv)];
+list[AlleFormula] translate((Invariant)`<Formula+ forms>`) = [translate(f) | Formula f <- forms];
  
 AlleFormula translate((Formula)`( <Formula form> )`) = translate(form);
 AlleFormula translate((Formula)`not <Formula form>`) = negation(translate(form));
@@ -92,6 +91,7 @@ AlleFormula translate(f:(Formula)`exists <{QuantDecl ","}+ decls> | <Formula for
               translate(form));
 
 AlleExpr translate((Expr)`( <Expr ex> )`) = translate(ex);
+AlleExpr translate(ex:(Expr)`<ClassName c>`) = relvar(ex@alleRel);
 AlleExpr translate(ex:(Expr)`<VarName v>`) = relvar(ex@alleRel);
 AlleExpr translate((Expr)`<Literal l>`) = translate(l);
 AlleExpr translate(ex:(Expr)`<Expr lhs>.<Expr rhs>`) 

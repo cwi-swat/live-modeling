@@ -1,0 +1,62 @@
+input {
+  old static
+    MetaModel mm 
+      classes = person
+      
+    Class person
+      fields = f1, f2
+    
+    Field f1
+      name = fldName
+      type = tpStr
+      
+    Field f2
+      name = fldAge
+      type = tpInt        
+              
+    String fldName
+    
+    Type tpStr
+    Type tpInt
+        
+  old runtime
+    Binding b1  
+      obj = o1
+      val = strJouke  
+      fld = f1  
+ 
+    Binding b2 
+      obj = o1 
+      val = intAge  
+      fld = f2  
+
+    Object o1  
+      bindings = b1, b2  
+      cls = person 
+ 
+    Value intAge  
+      bnd = b2  
+      type = tpInt 
+
+    Value strJouke  
+      bnd = b1  
+      type = tpStr 
+ 
+    Runtime x  
+      instances = o1 
+    
+  new static
+    MetaModel mm 
+      classes = person
+      
+    Class person
+      fields = f1
+    
+    Field f1
+      name = fldName
+      type = tpStr    
+              
+    String fldName
+    
+    Type tpStr
+}

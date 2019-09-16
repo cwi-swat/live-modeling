@@ -1,0 +1,62 @@
+static 
+  class MetaModel {
+    classes: Class*
+  }
+  
+  class Class {
+    fields: Field*
+  }
+  
+  class Field { 
+    name: String
+    type: Type
+  } 
+  
+  class String {} 
+  
+  class Type {}
+
+runtime 
+  class Runtime {
+    instances: Object*   
+
+    // All objects are reachable under runtime (no unconnected objects)
+    forall o: Object | o in instances
+    // All bindings are connected
+    forall b: Binding | b in instances.bindings
+    // All values are connected
+    forall v: Value | v in instances.bindings.val
+    // All values belong to distinct bindings                  
+    forall v1: Value, v2: Value | v1 != v2 => v1.bnd != v2.bnd
+  }
+  
+  class Object {
+    cls: Class
+    bindings: Binding*
+    
+    // Every field must have one binding
+    forall f: cls.fields | one (f & bindings.fld)
+    // A binding can only be connected to one object
+    forall b:bindings | b.obj = this
+    // A field can only have one binding
+    forall b1: bindings, b2: bindings | b1 != b2 => b1.fld != b2.fld
+  }
+  
+  class Binding { 
+    obj: Object
+    fld: Field
+    val: Value
+    
+    // The type of the binding is the same as the type of the binding 
+    fld.type = val.type
+    val.bnd = this
+  }
+  
+  class Value { 
+    bnd: Binding
+    type: Type   
+  }
+  
+migration 
+  // Objects should not be deleted between updates
+  //old[Runtime.instances] in new[Runtime.instances]

@@ -55,9 +55,9 @@ Models extract(Spec spc, ResolvedTypes res, NextepInstance inst) {
   // Extract (generic) relations
   list[NXRelation] rels = extractRelations(spc, res);
   
-  println("   debug generic part");
-  println([ "<c.name>"| UnaryRelation(Class c) <- rels]);
-  println();
+  //println("   debug generic part");
+  //println([ "<c.name>"| UnaryRelation(Class c) <- rels]);
+  //println();
 
   map[str, NXRelation] relDefs = ("<c.name>" : r | r: UnaryRelation(Class c) <- rels)
                                + (name : r       | r: NaryRelation(str name, _, _, _) <- rels);
@@ -91,7 +91,7 @@ set[NXBounds] extractBounds(set[ObjectDef] objDefs, map[str, NXRelation] rels) {
                                                      fld <- flds}
                         + {"<tp>_<fld.fieldName>" | (ObjectDef)`<Type tp> _ <FieldInstantiation+ flds>` <- objDefs, 
                                                      fld <- flds};
-  println(rels<0>);
+  //println(rels<0>);
   for (str relName <- declaredBins) {//, NaryRelation(_) := rels[relName]) {
     set[NXTuple] tpls = {binary(strAt("<a>"), extractAtom(b)) | 
                           (ObjectDef)`<Type tp> <Atom a> <FieldInstantiation+ flds>` <- objDefs, 
@@ -113,7 +113,7 @@ NXAtom extractAtom(Int i) = intAt(toInt("<i>"));
 // Extract the generic structure of the static and run-time models
 list[NXRelation] extractRelations(Spec spec, ResolvedTypes res) {
   // A unary relation for all classes 
-  list[NXRelation] class2relation(c:(Class)`class <ClassName x> {<ClassBody _>}`) 
+  list[NXRelation] class2relation(c:(Class)`class <ClassName x> { <ClassBody _> }`) 
     = [ UnaryRelation(c) ];
 
   // An n-ary relation for each field of the class

@@ -115,16 +115,16 @@ Spec annotate(Spec spc, NX2AlleMapping mapping) {
 Spec annotate(Spec spc, ResolvedAlleRels rels, ResolvedHeaders headers) {
   spc.\dynamic =visit(spc.\dynamic) {
     case Class cls => cls[@alleRel = rels[cls@\loc].name] 
-    case Expr expr => expr[@header = headers[expr@\loc]][@alleRel = rels[expr@\loc].name] when (Expr)`<VarName _>` := expr
-    case Expr expr => expr[@header = headers[expr@\loc]] when (Expr)`<VarName _>` !:= expr 
+    case Expr expr => expr[@header = headers[expr@\loc]][@alleRel = rels[expr@\loc].name] when (Expr)`<VarName _>` := expr || (Expr)`<ClassName _>` := expr
+    case Expr expr => expr[@header = headers[expr@\loc]] when (Expr)`<VarName _>` !:= expr && (Expr)`<ClassName _>` !:= expr
   }
   spc.migration =visit(spc.migration) {
-    case Expr expr => expr[@header = headers[expr@\loc]][@alleRel = rels[expr@\loc].name] when (Expr)`<VarName _>` := expr   
-    case Expr expr => expr[@header = headers[expr@\loc]] when (Expr)`<VarName _>` !:= expr
+    case Expr expr => expr[@header = headers[expr@\loc]][@alleRel = rels[expr@\loc].name] when (Expr)`<VarName _>` := expr || (Expr)`<ClassName _>` := expr  
+    case Expr expr => expr[@header = headers[expr@\loc]] when (Expr)`<VarName _>` !:= expr && (Expr)`<ClassName _>` !:= expr
   }
-  if ((Spec)`<StaticDef _> <DynamicDef _> <MigrationDef _> distance {<PriorityDistance* _>}` := spc) {
+  if ((Spec)`<StaticDef _> <DynamicDef _> <MigrationDef _> distance <PriorityDistance* _>` := spc) {
     spc.distance =visit(spc.distance) {
-      case Expr expr => expr[@header = headers[expr@\loc]][@alleRel = rels[expr@\loc].name] when bprintln("Its here! " + expr + "<expr@\loc>"), (Expr)`<VarName _>` := expr, bprintln("Now its here" + " Alle relation: " + rels[expr@\loc].name)
+      case Expr expr => expr[@header = headers[expr@\loc]][@alleRel = rels[expr@\loc].name] when (Expr)`<VarName _>` := expr
       case Expr expr => expr[@header = headers[expr@\loc]] when (Expr)`<VarName _>` !:= expr
     }     
   }
@@ -159,45 +159,44 @@ void resolve(Spec spc, Scope scp, Collect col) {
   }
 }
   
-void resolve((DynamicDef)`runtime { <Class* cs> }`, Scope scp, Collect col) {
+void resolve((DynamicDef)`runtime <Class* cs>`, Scope scp, Collect col) {
   for (Class c <- cs) {
     resolve(c, scp, col);
   }
 }
   
-void resolve((MigrationDef)`migration { <Formula* rules>}`, Scope scp, Collect col) { 
+void resolve((MigrationDef)`migration <Formula* rules>`, Scope scp, Collect col) { 
   for (Formula f <- rules) {
     resolve(f, scope(new(), col.lookupCls("Runtime"), scp), col);
   }
 }
 
-void resolve((DistanceDef)`distance { <PriorityDistance* priorities>}`, Scope scp, Collect col) { 
+void resolve((DistanceDef)`distance <PriorityDistance* priorities>`, Scope scp, Collect col) { 
   for (PriorityDistance p <- priorities) {
     resolve(p, scope(new(), col.lookupCls("Runtime"), scp), col);
   }
 }
 
-void resolve(c:(Class)`class <ClassName name> { <ClassBody body>}`, Scope scp, Collect col) {
+void resolve(c:(Class)`class <ClassName name> { <ClassBody body> }`, Scope scp, Collect col) {
   col.addAlleRel(c@\loc, col.lookupClass("<name>", scp.stp));  
   
   resolve(body, scope(scp.stp,col.lookupCls("<name>"), scp), col);
 }
+
+void resolve((ClassBody)`<FieldDecl* fields>`, Scope scp, Collect col) {
+  // nothing
+}
+
   
-void resolve((ClassBody)`<FieldDecl* fields> <Invariant* inv>`, Scope scp, Collect col) {
-  for (Invariant i <- inv) {
-    resolve(i, scp, col);
-  }
+void resolve((ClassBody)`<FieldDecl* fields> <Invariant inv>`, Scope scp, Collect col) {
+  resolve(inv, scp, col);
 }
 
 void resolve((PriorityDistance)`<Expr expr> : <Int p>`, Scope scp, Collect col) {
   resolve (expr, scp, col);
 }
 
-void resolve((Invariant)`invariant: <Formula form>`, Scope scp, Collect col) { 
-  resolve(form, scp, col);
-}
-
-void resolve((Invariant)`invariants { <Formula+ forms> }`, Scope scp, Collect col) {
+void resolve((Invariant)`<Formula+ forms>`, Scope scp, Collect col) {
   for (Formula f <- forms) {
     resolve(f, scp, col); 
   }
@@ -221,6 +220,7 @@ default void resolve(Formula f, Scope scp, Collect col) { throw "Unable to resol
 private str findType((Expr)`<Expr _>.<Expr rhs>`, Collect col) = findType(rhs,col);
 private str findType((Expr)`<Expr _>_<Expr rhs>`, Collect col) = findType(rhs,col);
 private str findType(ex:(Expr)`<VarName v>`, Collect col) = col.getType(ex@\loc);
+private str findType(ex:(Expr)`<ClassName c>`, Collect col) = "<c>"; //col.getType(ex@\loc);
 private str findType(ex:(Expr)`new[<Expr rhs>]`, Collect col) = findType(rhs,col);
 private str findType(ex:(Expr)`old[<Expr rhs>]`, Collect col) = findType(rhs,col);
 
@@ -274,6 +274,10 @@ void resolve(e:(Expr)`( <Expr expr> )`, Scope scp, Collect col) {
   col.addHeader(e@\loc, col.getHeader(expr@\loc)); 
 }
 
+void resolve(e:(Expr)`this`, Scope scp, Collect col) {
+
+}
+
 void resolve(e:(Expr)`<VarName v>`, Scope scp, Collect col) {  
   if (col.getHeader(e@\loc) == []) {
     AlleRel r;
@@ -287,6 +291,16 @@ void resolve(e:(Expr)`<VarName v>`, Scope scp, Collect col) {
       col.addType(e@\loc,"<v>");
     }  
     
+    col.addAlleRel(e@\loc,r);
+    col.addHeader(e@\loc,r.header);
+  }
+} 
+
+void resolve(e:(Expr)`<ClassName c>`, Scope scp, Collect col) {  
+  if (col.getHeader(e@\loc) == []) {
+    AlleRel r = col.lookupClass("<c>",scp.stp);
+    
+    col.addType(e@\loc,"<c>");    
     col.addAlleRel(e@\loc,r);
     col.addHeader(e@\loc,r.header);
   }
@@ -337,8 +351,8 @@ private void resolveUnionCompatibleExpr(Expr orig, Expr lhs, Expr rhs, Scope scp
   list[HeaderAttribute] rhsHeader = col.getHeader(rhs@\loc);
     
   if (lhsHeader != rhsHeader) {
-    println("Orig expr: <orig>");
-    println("LHS header: <lhsHeader>, RHS header: <rhsHeader>");
+    //println("Orig expr: <orig>");
+    //println("LHS header: <lhsHeader>, RHS header: <rhsHeader>");
     throw ("Intersection only works on compatible classes");
   }
   

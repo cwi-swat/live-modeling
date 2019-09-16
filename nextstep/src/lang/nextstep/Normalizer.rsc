@@ -16,7 +16,6 @@ loc normalize(Spec spec) {
       when c_norm := normalize(c)
   };
   
-  println(<spec@\loc[extension="norm"].file>);
   loc normalizedFile = |project://nextstep/output/<spec@\loc[extension="norm"].file>.nxst|;
   
   writeFile(normalizedFile, spec);
@@ -35,6 +34,9 @@ Class normalize(Class c) {
   result = visit (result) {
     case (Expr)`<VarName v>` => (Expr)`inst.<VarName v>`
       when any(f <- c.body.fields, v == f.fieldName)
+      
+    case (Expr)`this` => (Expr)`inst`
+    
      //case (Expr)`<VarName v>` : {
      //   if (f <- c.body.fields, v == f.fieldName) {
      //     insert (Expr)`classBoundVar.<VarName v>`;

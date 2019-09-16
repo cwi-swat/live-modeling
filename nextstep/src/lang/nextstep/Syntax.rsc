@@ -4,32 +4,23 @@ extend lang::nextstep::CoreSyntax;
 
 start syntax Spec = StaticDef static DynamicDef dynamic MigrationDef migration DistanceDef? distance;
 
-syntax StaticDef = "static" "{" Class* classes "}";
+syntax StaticDef = "static" Class* classes;
 
-syntax DynamicDef = "runtime" "{" Class* classes "}";
+syntax DynamicDef = "runtime" Class* classes;
 
-syntax MigrationDef = "migration" "{" Formula* rules "}";
+syntax MigrationDef = "migration" Formula* rules;
 
-syntax DistanceDef = "distance" "{" PriorityDistance* priorities "}";
+syntax DistanceDef = "distance" PriorityDistance* priorities;
 
-//syntax Class = "class" ClassName name Super? Bounds? bounds "{" ClassBody body "}";
 syntax Class = "class" ClassName name "{" ClassBody body "}";
 
-//syntax Super = "extends" ClassName parent;
-
-//syntax Bounds
-//  = upperOnly:      "(" Int upper ")"
-//  | upperAndLower:  "(" Int from ".." Int to ")"
-//  ;
-
-syntax ClassBody = FieldDecl* fields Invariant* inv;
+syntax ClassBody = FieldDecl* fields Invariant? inv;
 
 syntax FieldDecl 
   = VarName fieldName ":" Type type "*"? ;
 
 syntax Invariant
-  = "invariant" ":" Formula form
-  | "invariants" "{" Formula+ forms "}"
+  = Formula+ forms
   ;
 
 syntax Formula 
@@ -62,6 +53,8 @@ syntax Formula
 syntax Expr
   = bracket       "(" Expr ")"
   > var:          VarName 
+  | cls:          ClassName
+  | this:         "this"
   | lit:          Literal
   | left dotJoin: Expr "." Expr
   | left relJoin: Expr "_" Expr
