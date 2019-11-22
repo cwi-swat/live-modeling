@@ -34,7 +34,7 @@ void runAndVisLRP() = runAndVis(parseFile(|project://nextstep/input/lrp.nxst|), 
 void runAndGetNextModelSM() = runNextep(|project://nextstep/input/statemachine.nxst|, |project://nextstep/input/stmInstance1.nxstin|);
 void runAndGetNextModelRoboticArm() = runNextep(|project://nextstep/input/roboticarm.nxst|, |project://nextstep/input/rbaInstance1.nxstin|);
 
-void runAndGetNextModelLRP() = runNextep(|project://nextstep/input/lrp.nxst|, |project://nextstep/input/lrp/lrp_test02.nxstin|);
+void runAndGetNextModelLRP() = runNextep(|project://nextstep/input/lrp.nxst|, |project://nextstep/input/lrp/live_step1.nxstin|);
 
 void demoLRP1() = runNextep(|project://nextstep/input/lrp.nxst|, |project://nextstep/input/lrp/lrp_demo1.nxstin|);
 void demoLRP2() = runNextep(|project://nextstep/input/lrp.nxst|, |project://nextstep/input/lrp/lrp_demo2.nxstin|);

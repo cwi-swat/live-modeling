@@ -198,9 +198,14 @@ distance {
   (new[Runtime_runningMachines] -- old[Runtime_runningMachines]) ++ (old[Runtime_runningMachines] -- new[Runtime_runningMachines]): 0
   (new[Runtime_global] -- old[Runtime_global]) ++ (old[Runtime_global] -- new[Runtime_global]): 0
   (new[RuntimeMachine_rmachine] -- old[RuntimeMachine_rmachine]) ++ (old[RuntimeMachine_rmachine] -- new[RuntimeMachine_rmachine]): 0
-  (new[RuntimeMachine_currentState] -- old[RuntimeMachine_currentState]) ++ (old[RuntimeMachine_currentState] -- new[RuntimeMachine_currentState]): 0
-  (new[RuntimeMachine_triggeredTransition] -- old[RuntimeMachine_triggeredTransition]) ++ (old[RuntimeMachine_triggeredTransition] -- new[RuntimeMachine_triggeredTransition]): 0
-  (new[RuntimeState_rstate] -- old[RuntimeState_rstate]) ++ (old[RuntimeState_rstate] -- new[RuntimeState_rstate]): 0
+  
+  // THIS EXPRESSION DOES NOT WORK:
+  (new[RuntimeMachine_currentState_rstate] -- old[RuntimeMachine_currentState_rstate]) ++ 
+    (old[RuntimeMachine_currentState_rstate] -- new[RuntimeMachine_currentState_rstate]): 0
+  //(new[RuntimeMachine_currentState] -- old[RuntimeMachine_currentState]) ++ (old[RuntimeMachine_currentState] -- new[RuntimeMachine_currentState]): 0
+  //(new[RuntimeState_rstate] -- old[RuntimeState_rstate]) ++ (old[RuntimeState_rstate] -- new[RuntimeState_rstate]): 0
+  
+  (new[RuntimeMachine_triggeredTransition] -- old[RuntimeMachine_triggeredTransition]) ++ (old[RuntimeMachine_triggeredTransition] -- new[RuntimeMachine_triggeredTransition]): 0  
   (new[RuntimeState_startTime] -- old[RuntimeState_startTime]) ++ (old[RuntimeState_startTime] -- new[RuntimeState_startTime]): 0
   (new[RuntimeState_runningNestedMachines] -- old[RuntimeState_runningNestedMachines]) ++ (old[RuntimeState_runningNestedMachines] -- new[RuntimeState_runningNestedMachines]): 0  
   
