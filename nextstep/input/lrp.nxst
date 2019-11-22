@@ -143,6 +143,10 @@ runtime {
 			
 			//Structural consistency with the static part
 			runningNestedMachines.rmachine = rstate.nested
+			
+			// TODO: The following constraint is not normalized properly!! 
+			// Current states of the nested machines were entered not earlier than this one
+			//forall m: runningNestedMachines | (startTime) <= (m.currentState.startTime) 
 		}
 	}
 	
