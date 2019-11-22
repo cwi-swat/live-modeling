@@ -98,7 +98,7 @@ AlleExpr translate(ex:(Expr)`<Expr lhs>.<Expr rhs>`)
   = project(naturalJoin(translate(lhs), translate(rhs)), [a.name| a <- ex@header]);
   
 // new expression for a relation
-AlleExpr translate(ex:(Expr)`<Expr lhs>_<Expr rhs>`) 
+AlleExpr translate(ex:(Expr)`<Expr lhs>\<-\><Expr rhs>`) 
   = naturalJoin(translate(lhs), translate(rhs));
   
 
