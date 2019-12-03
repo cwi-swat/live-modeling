@@ -198,33 +198,41 @@ migration {
 	
 }
 
+// TODO: the numbers in the syntax below do not have any effect currently (only the order) 
 distance {
-  (new[Runtime<->runningMachines] -- old[Runtime<->runningMachines]) ++ 
-    (old[Runtime<->runningMachines] -- new[Runtime<->runningMachines]): 0
+  // TODO: this also should be in the distance, not in the migration rules! 
+  //new[Runtime.timeNow] - old[Runtime.timeNow] : 0
+
+  // actual domain pecific distance
   (new[Runtime<->global] -- old[Runtime<->global]) ++ (old[Runtime<->global] -- new[Runtime<->global]): 0
   
-  // THIS EXPRESSION DOES NOT WORK:
   (new[RuntimeMachine<->currentState<->rstate] -- old[RuntimeMachine<->currentState<->rstate]) ++ 
     (old[RuntimeMachine<->currentState<->rstate] -- new[RuntimeMachine<->currentState<->rstate]): 0
-  //(new[RuntimeMachine<->currentState] -- old[RuntimeMachine<->currentState]) ++ 
-  //  (old[RuntimeMachine<->currentState] -- new[RuntimeMachine<->currentState]): 0
-  //(new[RuntimeState<->rstate] -- old[RuntimeState<->rstate]) ++ 
-  //  (old[RuntimeState<->rstate] -- new[RuntimeState<->rstate]): 0
+
+  // minimum distance on auxiliary runtime structures  
+  (new[Runtime<->runningMachines] -- old[Runtime<->runningMachines]) ++ 
+    (old[Runtime<->runningMachines] -- new[Runtime<->runningMachines]): 0
+  (new[RuntimeState<->rstate] -- old[RuntimeState<->rstate]) ++ 
+    (old[RuntimeState<->rstate] -- new[RuntimeState<->rstate]): 0
+  (new[RuntimeMachine<->rmachine] -- old[RuntimeMachine<->rmachine]) ++ 
+    (old[RuntimeMachine<->rmachine] -- new[RuntimeMachine<->rmachine]): 0
   
-  //(new[RuntimeMachine<->rmachine] -- old[RuntimeMachine<->rmachine]) ++ 
-  //  (old[RuntimeMachine<->rmachine] -- new[RuntimeMachine<->rmachine]): 0
-  
-  
+  // Less priority distance
   (new[RuntimeMachine<->triggeredTransition] -- old[RuntimeMachine<->triggeredTransition]) ++ 
     (old[RuntimeMachine<->triggeredTransition] -- new[RuntimeMachine<->triggeredTransition]): 0  
   (new[RuntimeState<->startTime] -- old[RuntimeState<->startTime]) ++ 
     (old[RuntimeState<->startTime] -- new[RuntimeState<->startTime]): 0
-  (new[RuntimeState<->runningNestedMachines] -- old[RuntimeState<->runningNestedMachines]) ++ 
-    (old[RuntimeState<->runningNestedMachines] -- new[RuntimeState<->runningNestedMachines]): 0  
+
+  // actual domain pecific distance
+  (new[RuntimeState<->runningNestedMachines<->rmachine] -- old[RuntimeState<->runningNestedMachines<->rmachine]) ++ 
+    (old[RuntimeState<->runningNestedMachines<->rmachine] -- new[RuntimeState<->runningNestedMachines<->rmachine]): 0  
   
-  (new[Runtime<->cache] -- old[Runtime<->cache]) ++ (old[Runtime<->cache] -- new[Runtime<->cache]): 1
+  (new[Runtime<->cache<->caction] -- old[Runtime<->cache<->caction]) ++ 
+    (old[Runtime<->cache<->caction] -- new[Runtime<->cache<->caction]): 1
   (new[RuntimeMachine<->changedValues] -- old[RuntimeMachine<->changedValues]) ++ 
     (old[RuntimeMachine<->changedValues] -- new[RuntimeMachine<->changedValues]): 1
+ 
+  // minimum distance on auxiliary runtime structures
   (new[CachedAction<->caction] -- old[CachedAction<->caction]) ++ 
     (old[CachedAction<->caction] -- new[CachedAction<->caction]): 1
   (new[CachedAction<->index] -- old[CachedAction<->index]) ++ 
