@@ -1,7 +1,7 @@
 module Checker
 
-import ide::CombinedAST;
-import ide::CombinedModelFinder;
+import translation::AST;
+import ModelFinder;
 
 import ide::vis::ModelVisualizer; 
 

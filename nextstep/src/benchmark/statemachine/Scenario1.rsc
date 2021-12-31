@@ -1,6 +1,7 @@
 module benchmark::statemachine::Scenario1
 
 extend benchmark::statemachine::Scenario;
+import lang::nextstep::Syntax;
 
 import List;
 import ParseTree;

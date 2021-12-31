@@ -11,8 +11,8 @@ import lang::nextstep::Annotator;
 import lang::nextstep::Normalizer;
 
 import translation::AST;                    // AlleAlle
-import translation::theories::integer::AST; // AlleAlle
-import translation::theories::integer::Unparser;
+import translation::Unparser;
+
 import ide::vis::integrationtests::VisualizerTester;
 
 import Parser;
@@ -52,7 +52,7 @@ void runAndVis(Spec spc, NextepInstance inst) {
   // write AlleAlle file
   writeFile(|project://nextstep/output/latestOutput.alle|, unparse(result.alleProblem));
   
-  checkAndVis(result.alleProblem);
+  translateAndVis(result.alleProblem);
 }
 
 loc runAndWriteNextModelToFile(Spec spc, NextepInstance inst) {
@@ -101,7 +101,7 @@ NxtpToAlleTransResult translateNxtpToAlle(Spec spc, NextepInstance inst) {
   Maybe[ObjectiveSection] objectives = generateAlleObjectives(rels, annotatedSpc);
   
   // write AlleAlle file
-  return <problem(toList(rels.alle), forms, objectives, nothing()), rels>;
+  return <problem(toList(rels.alle), forms, (), objectives, nothing()), rels>;
 }
 
 

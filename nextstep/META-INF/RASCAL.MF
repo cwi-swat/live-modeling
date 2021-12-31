@@ -3,4 +3,6 @@ Main-Function: main
 Courses: courses
 Main-Module: Plugin
 Source: src
-
+Project-Name: rebel2
+Require-Libraries: |lib://allealle|, |lib://rascal_eclipse|
+Courses: courses

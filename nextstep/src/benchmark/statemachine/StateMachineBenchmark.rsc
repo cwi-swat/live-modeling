@@ -3,8 +3,8 @@ module benchmark::statemachine::StateMachineBenchmark
 import benchmark::statemachine::Scenario1;
 import benchmark::statemachine::Scenario2;
 
-import ide::CombinedAST;
-import ide::CombinedModelFinder;
+import translation::AST;
+import ModelFinder;
 import ide::vis::ModelVisualizer;
 
 import lang::nextstep::Syntax;
