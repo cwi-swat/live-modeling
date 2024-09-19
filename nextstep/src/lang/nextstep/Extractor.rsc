@@ -55,9 +55,9 @@ Models extract(Spec spc, ResolvedTypes res, NextepInstance inst) {
   // Extract (generic) relations
   list[NXRelation] rels = extractRelations(spc, res);
   
-  println("   debug generic part");
-  println([ "<c.name>"| UnaryRelation(Class c) <- rels]);
-  println();
+  //println("   debug generic part");
+  //println([ "<c.name>"| UnaryRelation(Class c) <- rels]);
+  //println();
 
   map[str, NXRelation] relDefs = ("<c.name>" : r | r: UnaryRelation(Class c) <- rels)
                                + (name : r       | r: NaryRelation(str name, _, _, _) <- rels);
@@ -108,7 +108,7 @@ set[NXBounds] extractBounds(set[ObjectDef] objDefs, map[str, NXRelation] rels) {
 }
 
 NXAtom extractAtom(Atom a) = strAt("<a>");
-NXAtom extractAtom(Int i) = intAt(toInt("<i>"));
+NXAtom extractAtom(Int i) = intAt(toInt("<i>")) when bprintln("Int val = <i>");
 
 // Extract the generic structure of the static and run-time models
 list[NXRelation] extractRelations(Spec spec, ResolvedTypes res) {

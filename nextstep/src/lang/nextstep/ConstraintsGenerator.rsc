@@ -296,8 +296,8 @@ AlleFormula distanceDeclaration(intType(), RelationDef d, RelationDef xo, Relati
 // Changes needed here: generate objectives for DS distance
 Maybe[ObjectiveSection] generateAlleObjectives(NX2AlleMapping rels, (Spec)`<StaticDef _> <DynamicDef _> <MigrationDef _>`) {
   list[Objective] criteria = 
-    [minimize(generateMetric(nxDom, alleRel)) | <NaryRelation(_, _, nxDom, _), alleRel, distance()> <- rels]
-  + [minimize(generateMetric(class(nxDom), alleRel)) | <UnaryRelation(nxDom), alleRel, distance()> <- rels];  
+    [minimize(generateMetric(class(nxDom), alleRel)) | <UnaryRelation(nxDom), alleRel, distance()> <- rels] 
+  + [minimize(generateMetric(nxDom, alleRel)) | <NaryRelation(_, _, nxDom, _), alleRel, distance()> <- rels];
   
   return just(objectives(lex(), criteria)); 
 }
